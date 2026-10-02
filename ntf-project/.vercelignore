@@ -1,0 +1,8 @@
+# Fora do build publicado: saídas locais, relatórios e baselines visuais.
+dist
+.tanstack
+playwright-report
+test-results
+blob-report
+lighthouse/reports
+tests/**/*-snapshots
