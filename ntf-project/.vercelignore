@@ -6,3 +6,5 @@ test-results
 blob-report
 lighthouse/reports
 tests/**/*-snapshots
+.vercel
+.env*.local
