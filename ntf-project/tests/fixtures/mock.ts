@@ -1,4 +1,5 @@
 import { test as base, expect, type Page } from '@playwright/test'
+import type { NftChange } from '@/mocks/catalog'
 import type { MockControl } from '@/mocks/control'
 import type { ScenarioId } from '@/mocks/scenarios'
 
@@ -26,6 +27,11 @@ export function mockControl(page: Page) {
     advanceClock: (ms: number) =>
       page.evaluate((value) => window.__kurioMock!.advanceClock(value), ms),
     now: () => page.evaluate(() => window.__kurioMock!.now()),
+    updateNft: (id: string, change: NftChange) =>
+      page.evaluate(([nftId, patch]) => window.__kurioMock!.updateNft(nftId, patch), [
+        id,
+        change,
+      ] as const),
   } satisfies Partial<Record<keyof MockControl, unknown>>
 }
 
