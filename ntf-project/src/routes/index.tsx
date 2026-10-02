@@ -1,19 +1,30 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { Heart, LogIn } from 'lucide-react'
-import { toast } from 'sonner'
-import { NftImage } from '@/components/common/nft-image'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { SlidersHorizontal } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Skeleton } from '@/components/ui/skeleton'
+  previewCatalogFacets,
+  previewCatalogPage,
+  previewCatalogStatus,
+  previewFavoriteIds,
+  previewFeaturedNft,
+  previewHeroSlides,
+} from '@/dev/preview-data'
+import { CatalogFilters } from '@/features/catalog/components/catalog-filters'
+import { CatalogSearchForm } from '@/features/catalog/components/catalog-search-form'
+import { CatalogSection } from '@/features/catalog/components/catalog-section'
+import { CatalogSortSelect } from '@/features/catalog/components/catalog-toolbar'
+import { FiltersSheet } from '@/features/catalog/components/filters-sheet'
 import { catalogSearchSchema } from '@/features/catalog/search-params'
+import type { NftSummary } from '@/features/catalog/types'
+import {
+  countActiveFilters,
+  useCatalogSearch,
+  useUpdateCatalogSearch,
+} from '@/features/catalog/use-catalog-search'
+import { HeroShowcase } from '@/features/home/components/hero-showcase'
+import { MintJournal } from '@/features/home/components/mint-journal'
+import { PromoBanners } from '@/features/home/components/promo-banners'
+import { announce } from '@/lib/announce'
 
 export const Route = createFileRoute('/')({
   validateSearch: catalogSearchSchema,
@@ -21,114 +32,96 @@ export const Route = createFileRoute('/')({
   component: HomePage,
 })
 
-const ARTS = [
-  { src: '/images/nfts/emerald', name: 'Emerald Ape #042' },
-  { src: '/images/nfts/sage', name: 'Sage Nomad #009' },
-  { src: '/images/nfts/ivory', name: 'Ivory Baron #088' },
-  { src: '/images/nfts/golden', name: 'Golden Beat #207' },
-]
-
-// Prévia temporária do design system; a Home real é construída na fase 2a.
 function HomePage() {
+  const search = useCatalogSearch()
+  const updateSearch = useUpdateCatalogSearch()
+  const catalog = useMemo(() => previewCatalogPage(search), [search])
+  const [favoriteIds, setFavoriteIds] = useState<ReadonlySet<string>>(
+    () => new Set(previewFavoriteIds),
+  )
+
+  const toggleFavorite = (nft: NftSummary) => {
+    const isFavorite = favoriteIds.has(nft.id)
+    const next = new Set(favoriteIds)
+    if (isFavorite) next.delete(nft.id)
+    else next.add(nft.id)
+    setFavoriteIds(next)
+    announce(`${nft.name} ${isFavorite ? 'removido dos' : 'adicionado aos'} favoritos`)
+  }
+
+  const clearFilters = () =>
+    updateSearch({
+      q: undefined,
+      collections: undefined,
+      networks: undefined,
+      priceMin: undefined,
+      priceMax: undefined,
+    })
+
+  const filters = (
+    <CatalogFilters facets={previewCatalogFacets} search={search} onChange={updateSearch} />
+  )
+  const activeFilters = countActiveFilters(search)
+
   return (
-    <div className="page-container flex flex-col gap-14 py-10 md:py-16">
-      <section className="flex flex-col gap-4">
-        <p className="text-sm">Bem-vindo à Kurio</p>
-        <h1 className="max-w-[600px] text-[28px] leading-[44px] font-bold tracking-wide md:text-[44px] md:leading-[70px]">
-          SEJA DONO DO FUTURO DA ARTE DIGITAL
-        </h1>
-        <p className="max-w-[557px] text-sm leading-6 text-muted-foreground">
-          Descubra NFTs selecionados de criadores emergentes e consagrados. Colecione arte digital
-          rara, apoie artistas e tenha uma parte da cultura da internet.
-        </p>
-        <Button className="w-fit px-8">EXPLORAR</Button>
-      </section>
-
-      <section id="mercado" className="flex flex-col gap-6">
-        <h2 className="text-lg font-bold">Prévia do design system</h2>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <Button>COMPRAR</Button>
-          <Button variant="outline">
-            <Heart aria-hidden="true" />
-            Favoritar
-          </Button>
-          <Button variant="outline-primary">Aplicar</Button>
-          <Button variant="secondary">Secundário</Button>
-          <Button variant="ghost">Ghost</Button>
-          <Button variant="link">Continuar explorando</Button>
-          <Button size="sm">
-            <LogIn aria-hidden="true" />
-            Entrar
-          </Button>
-          <Button variant="gradient" size="pill">
-            Comprar NFT
-          </Button>
-          <Button disabled>Indisponível</Button>
-          <Button variant="outline" onClick={() => toast.success('Toast de exemplo exibido.')}>
-            Mostrar toast
-          </Button>
-        </div>
-
-        <div className="grid max-w-3xl gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="preview-name">
-              Nome de exibição <span className="text-destructive">*</span>
-            </Label>
-            <Input id="preview-name" placeholder="Seu nome" />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="preview-network">
-              Rede <span className="text-destructive">*</span>
-            </Label>
-            <Select>
-              <SelectTrigger id="preview-network" className="w-full">
-                <SelectValue placeholder="Selecione uma rede" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ethereum">Ethereum</SelectItem>
-                <SelectItem value="polygon">Polygon</SelectItem>
-                <SelectItem value="solana">Solana</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="preview-error">E-mail</Label>
-            <Input
-              id="preview-error"
-              aria-invalid
-              defaultValue="contato@"
-              aria-describedby="preview-error-msg"
+    <>
+      <div className="page-container flex gap-2 pt-4 md:hidden">
+        <CatalogSearchForm
+          value={search.q ?? ''}
+          onSearch={(q) => updateSearch({ q }, { scrollToResults: true })}
+        />
+        <FiltersSheet
+          resultCount={catalog.total}
+          trigger={
+            <button
+              type="button"
+              aria-label={
+                activeFilters > 0
+                  ? `Filtros (${activeFilters} ${activeFilters === 1 ? 'ativo' : 'ativos'})`
+                  : 'Filtros'
+              }
+              className="relative flex size-[42px] shrink-0 items-center justify-center rounded-xl bg-[linear-gradient(135deg,#885933,#c98449)] text-primary-foreground"
+            >
+              <SlidersHorizontal className="size-5" aria-hidden="true" />
+              {activeFilters > 0 && (
+                <span
+                  aria-hidden="true"
+                  className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-foreground text-[11px] font-bold text-background"
+                >
+                  {activeFilters}
+                </span>
+              )}
+            </button>
+          }
+        >
+          <div className="flex flex-col gap-8">
+            <CatalogSortSelect
+              value={search.sort ?? 'recentes'}
+              onChange={(sort) => updateSearch({ sort: sort === 'recentes' ? undefined : sort })}
             />
-            <p id="preview-error-msg" className="text-xs text-destructive">
-              Informe um e-mail válido.
-            </p>
+            {filters}
           </div>
-        </div>
+        </FiltersSheet>
+      </div>
 
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">
-          {ARTS.map((art, index) => (
-            <figure key={art.src} className="flex flex-col gap-3 rounded-lg bg-surface p-1">
-              <NftImage
-                src={art.src}
-                alt={`Ilustração do NFT ${art.name}`}
-                sizes="(min-width: 1024px) 200px, 45vw"
-                priority={index === 0}
-                className="aspect-square rounded-lg"
-              />
-              <figcaption className="flex flex-col gap-1 px-2 pb-2 text-[15px]">
-                <span>{art.name}</span>
-                <span className="font-bold text-brand">1.19 ETH</span>
-              </figcaption>
-            </figure>
-          ))}
-          <div className="flex flex-col gap-3 rounded-lg bg-surface p-1" aria-busy="true">
-            <Skeleton className="aspect-square rounded-lg" />
-            <Skeleton className="mx-2 h-4 w-3/4" />
-            <Skeleton className="mx-2 mb-2 h-4 w-1/3" />
-          </div>
-        </div>
-      </section>
-    </div>
+      <HeroShowcase slides={previewHeroSlides} />
+
+      <CatalogSection
+        search={search}
+        catalog={catalog}
+        facets={previewCatalogFacets}
+        featured={previewFeaturedNft}
+        status={previewCatalogStatus}
+        favoriteIds={favoriteIds}
+        filters={filters}
+        onToggleFavorite={toggleFavorite}
+        onChange={updateSearch}
+        onClearFilters={clearFilters}
+        onRetry={() => window.location.reload()}
+      />
+
+      <PromoBanners />
+      <MintJournal />
+    </>
   )
 }
