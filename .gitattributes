@@ -1,0 +1,11 @@
+# Mantém LF no repositório e no checkout, independente do core.autocrlf de cada máquina.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
