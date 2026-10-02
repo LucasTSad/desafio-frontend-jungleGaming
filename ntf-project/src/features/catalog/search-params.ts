@@ -31,6 +31,8 @@ export const CATALOG_SORTS = [
   { value: 'nome', label: 'Nome (A–Z)' },
 ] as const
 
+export const CATALOG_PAGE_SIZE = 9
+
 export type CollectionSlug = (typeof CATALOG_COLLECTIONS)[number]['slug']
 export type NetworkSlug = (typeof CATALOG_NETWORKS)[number]['slug']
 export type CatalogTab = (typeof CATALOG_TABS)[number]['value']
