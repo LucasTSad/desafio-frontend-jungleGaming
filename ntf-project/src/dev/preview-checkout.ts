@@ -7,7 +7,6 @@ import type {
   CheckoutQuote,
   PaymentResult,
   PaymentStep,
-  SavedWallet,
   WalletProvider,
 } from '@/features/checkout/types'
 import type { Order } from '@/features/orders/types'
@@ -21,25 +20,6 @@ import { previewCartActions } from './preview-cart'
  */
 export const previewCheckoutScenario:
   'success' | 'wallet-rejected' | 'quote-changed' | 'payment-refused' = 'success'
-
-export const previewSavedWallets: SavedWallet[] = [
-  {
-    id: 'reserva',
-    label: 'Reserva',
-    displayAddress: 'nova.kurio.eth',
-    address: '0x5c3B9d27E4a1F0c86D2e7B41a9F3c0D58e6A2b17',
-    network: 'polygon',
-    provider: 'coinbase',
-  },
-  {
-    id: 'principal',
-    label: 'Principal',
-    displayAddress: '0xA91F…E82C',
-    address: '0xA91F4c2D7e3B5a6C8d9E0f1A2b3C4d5E6f7AE82C',
-    network: 'ethereum',
-    provider: 'metamask',
-  },
-]
 
 const STORAGE_KEY = 'kurio-preview-orders'
 const CONFIRMATION_DELAY = 3500

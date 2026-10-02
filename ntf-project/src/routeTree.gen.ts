@@ -13,9 +13,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AprendaRouteImport } from './routes/aprenda'
 import { Route as CadastroRouteImport } from './routes/cadastro'
 import { Route as CarrinhoRouteImport } from './routes/carrinho'
+import { Route as ContaRouteImport } from './routes/conta'
 import { Route as CriadoresRouteImport } from './routes/criadores'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as PagamentoRouteImport } from './routes/pagamento'
+import { Route as ContaIndexRouteImport } from './routes/conta.index'
 import { Route as ContaCarteirasRouteImport } from './routes/conta.carteiras'
 import { Route as ContaFavoritosRouteImport } from './routes/conta.favoritos'
 import { Route as ContaPerfilRouteImport } from './routes/conta.perfil'
@@ -42,6 +44,11 @@ const CarrinhoRoute = CarrinhoRouteImport.update({
   path: '/carrinho',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContaRoute = ContaRouteImport.update({
+  id: '/conta',
+  path: '/conta',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CriadoresRoute = CriadoresRouteImport.update({
   id: '/criadores',
   path: '/criadores',
@@ -57,20 +64,25 @@ const PagamentoRoute = PagamentoRouteImport.update({
   path: '/pagamento',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContaIndexRoute = ContaIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ContaRoute,
+} as any)
 const ContaCarteirasRoute = ContaCarteirasRouteImport.update({
-  id: '/conta/carteiras',
-  path: '/conta/carteiras',
-  getParentRoute: () => rootRouteImport,
+  id: '/carteiras',
+  path: '/carteiras',
+  getParentRoute: () => ContaRoute,
 } as any)
 const ContaFavoritosRoute = ContaFavoritosRouteImport.update({
-  id: '/conta/favoritos',
-  path: '/conta/favoritos',
-  getParentRoute: () => rootRouteImport,
+  id: '/favoritos',
+  path: '/favoritos',
+  getParentRoute: () => ContaRoute,
 } as any)
 const ContaPerfilRoute = ContaPerfilRouteImport.update({
-  id: '/conta/perfil',
-  path: '/conta/perfil',
-  getParentRoute: () => rootRouteImport,
+  id: '/perfil',
+  path: '/perfil',
+  getParentRoute: () => ContaRoute,
 } as any)
 const NftNftIdRoute = NftNftIdRouteImport.update({
   id: '/nft/$nftId',
@@ -88,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/aprenda': typeof AprendaRoute
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
+  '/conta': typeof ContaRouteWithChildren
   '/criadores': typeof CriadoresRoute
   '/entrar': typeof EntrarRoute
   '/pagamento': typeof PagamentoRoute
@@ -96,6 +109,7 @@ export interface FileRoutesByFullPath {
   '/conta/perfil': typeof ContaPerfilRoute
   '/nft/$nftId': typeof NftNftIdRoute
   '/pedidos/$orderId': typeof PedidosOrderIdRoute
+  '/conta/': typeof ContaIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -110,6 +124,7 @@ export interface FileRoutesByTo {
   '/conta/perfil': typeof ContaPerfilRoute
   '/nft/$nftId': typeof NftNftIdRoute
   '/pedidos/$orderId': typeof PedidosOrderIdRoute
+  '/conta': typeof ContaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -117,6 +132,7 @@ export interface FileRoutesById {
   '/aprenda': typeof AprendaRoute
   '/cadastro': typeof CadastroRoute
   '/carrinho': typeof CarrinhoRoute
+  '/conta': typeof ContaRouteWithChildren
   '/criadores': typeof CriadoresRoute
   '/entrar': typeof EntrarRoute
   '/pagamento': typeof PagamentoRoute
@@ -125,6 +141,7 @@ export interface FileRoutesById {
   '/conta/perfil': typeof ContaPerfilRoute
   '/nft/$nftId': typeof NftNftIdRoute
   '/pedidos/$orderId': typeof PedidosOrderIdRoute
+  '/conta/': typeof ContaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -133,6 +150,7 @@ export interface FileRouteTypes {
     | '/aprenda'
     | '/cadastro'
     | '/carrinho'
+    | '/conta'
     | '/criadores'
     | '/entrar'
     | '/pagamento'
@@ -141,6 +159,7 @@ export interface FileRouteTypes {
     | '/conta/perfil'
     | '/nft/$nftId'
     | '/pedidos/$orderId'
+    | '/conta/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -155,12 +174,14 @@ export interface FileRouteTypes {
     | '/conta/perfil'
     | '/nft/$nftId'
     | '/pedidos/$orderId'
+    | '/conta'
   id:
     | '__root__'
     | '/'
     | '/aprenda'
     | '/cadastro'
     | '/carrinho'
+    | '/conta'
     | '/criadores'
     | '/entrar'
     | '/pagamento'
@@ -169,6 +190,7 @@ export interface FileRouteTypes {
     | '/conta/perfil'
     | '/nft/$nftId'
     | '/pedidos/$orderId'
+    | '/conta/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -176,12 +198,10 @@ export interface RootRouteChildren {
   AprendaRoute: typeof AprendaRoute
   CadastroRoute: typeof CadastroRoute
   CarrinhoRoute: typeof CarrinhoRoute
+  ContaRoute: typeof ContaRouteWithChildren
   CriadoresRoute: typeof CriadoresRoute
   EntrarRoute: typeof EntrarRoute
   PagamentoRoute: typeof PagamentoRoute
-  ContaCarteirasRoute: typeof ContaCarteirasRoute
-  ContaFavoritosRoute: typeof ContaFavoritosRoute
-  ContaPerfilRoute: typeof ContaPerfilRoute
   NftNftIdRoute: typeof NftNftIdRoute
   PedidosOrderIdRoute: typeof PedidosOrderIdRoute
 }
@@ -216,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CarrinhoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/conta': {
+      id: '/conta'
+      path: '/conta'
+      fullPath: '/conta'
+      preLoaderRoute: typeof ContaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/criadores': {
       id: '/criadores'
       path: '/criadores'
@@ -237,26 +264,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagamentoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/conta/': {
+      id: '/conta/'
+      path: '/'
+      fullPath: '/conta/'
+      preLoaderRoute: typeof ContaIndexRouteImport
+      parentRoute: typeof ContaRoute
+    }
     '/conta/carteiras': {
       id: '/conta/carteiras'
-      path: '/conta/carteiras'
+      path: '/carteiras'
       fullPath: '/conta/carteiras'
       preLoaderRoute: typeof ContaCarteirasRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ContaRoute
     }
     '/conta/favoritos': {
       id: '/conta/favoritos'
-      path: '/conta/favoritos'
+      path: '/favoritos'
       fullPath: '/conta/favoritos'
       preLoaderRoute: typeof ContaFavoritosRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ContaRoute
     }
     '/conta/perfil': {
       id: '/conta/perfil'
-      path: '/conta/perfil'
+      path: '/perfil'
       fullPath: '/conta/perfil'
       preLoaderRoute: typeof ContaPerfilRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ContaRoute
     }
     '/nft/$nftId': {
       id: '/nft/$nftId'
@@ -275,17 +309,31 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface ContaRouteChildren {
+  ContaCarteirasRoute: typeof ContaCarteirasRoute
+  ContaFavoritosRoute: typeof ContaFavoritosRoute
+  ContaPerfilRoute: typeof ContaPerfilRoute
+  ContaIndexRoute: typeof ContaIndexRoute
+}
+
+const ContaRouteChildren: ContaRouteChildren = {
+  ContaCarteirasRoute: ContaCarteirasRoute,
+  ContaFavoritosRoute: ContaFavoritosRoute,
+  ContaPerfilRoute: ContaPerfilRoute,
+  ContaIndexRoute: ContaIndexRoute,
+}
+
+const ContaRouteWithChildren = ContaRoute._addFileChildren(ContaRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AprendaRoute: AprendaRoute,
   CadastroRoute: CadastroRoute,
   CarrinhoRoute: CarrinhoRoute,
+  ContaRoute: ContaRouteWithChildren,
   CriadoresRoute: CriadoresRoute,
   EntrarRoute: EntrarRoute,
   PagamentoRoute: PagamentoRoute,
-  ContaCarteirasRoute: ContaCarteirasRoute,
-  ContaFavoritosRoute: ContaFavoritosRoute,
-  ContaPerfilRoute: ContaPerfilRoute,
   NftNftIdRoute: NftNftIdRoute,
   PedidosOrderIdRoute: PedidosOrderIdRoute,
 }

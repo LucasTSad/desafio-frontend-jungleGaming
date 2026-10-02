@@ -306,3 +306,11 @@ export function previewRecommendations(excludeIds: string[]): NftSummary[] {
     .slice(0, 10)
     .map(toSummary)
 }
+
+/** NFTs na ordem dos ids informados, ignorando ids que não existem mais. */
+export function previewNftSummaries(ids: Iterable<string>): NftSummary[] {
+  return Array.from(ids).flatMap((id) => {
+    const nft = PREVIEW_NFTS.find((item) => item.id === id)
+    return nft ? [toSummary(nft)] : []
+  })
+}

@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMemo } from 'react'
 import { usePreviewCart } from '@/dev/preview-cart'
-import { previewPay, previewSavedWallets } from '@/dev/preview-checkout'
+import { usePreviewAccount, usePreviewSavedWallets } from '@/dev/preview-account'
+import { previewPay } from '@/dev/preview-checkout'
 import { previewDataStatus } from '@/dev/preview-data'
-import { getCurrentAccount, usePreviewUser } from '@/dev/preview-session'
+import { getCurrentAccount } from '@/dev/preview-session'
 import { requireAuth } from '@/features/auth/require-auth'
 import { CheckoutView } from '@/features/checkout/components/checkout-view'
 import type { CheckoutInput } from '@/features/checkout/schemas'
@@ -18,29 +19,30 @@ export const Route = createFileRoute('/pagamento')({
 function CheckoutPage() {
   const navigate = useNavigate()
   const { lines, totals, coupon } = usePreviewCart()
-  const user = usePreviewUser()
+  const profile = usePreviewAccount()?.profile
+  const savedWallets = usePreviewSavedWallets()
 
   useDocumentTitle('Pagamento')
 
   const defaultValues = useMemo<Partial<CheckoutInput>>(() => {
-    const wallet = previewSavedWallets[0]
+    const wallet = savedWallets[0]
     return {
-      displayName: user?.displayName ?? '',
-      username: '',
+      displayName: profile?.displayName ?? '',
+      username: profile?.username ?? '',
       profileName: '',
-      email: '',
+      email: profile?.email ?? '',
       referralCode: '',
-      ensName: '',
+      ensName: profile?.ensName ?? '',
       secondaryWallet: '',
       note: '',
-      walletSource: 'saved',
+      walletSource: wallet ? 'saved' : 'other',
       savedWalletId: wallet?.id,
       network: wallet?.network,
       walletAddress: wallet?.address ?? '',
       walletType: wallet?.provider,
       provider: wallet?.provider,
     }
-  }, [user])
+  }, [profile, savedWallets])
 
   return (
     <CheckoutView
@@ -48,7 +50,7 @@ function CheckoutPage() {
       lines={lines}
       totals={totals}
       coupon={coupon}
-      savedWallets={previewSavedWallets}
+      savedWallets={savedWallets}
       defaultValues={defaultValues}
       onPay={(values, request) =>
         previewPay({
