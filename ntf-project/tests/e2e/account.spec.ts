@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { ACCOUNTS } from '../fixtures/accounts'
 import { fillSignIn, signIn, signOut } from '../fixtures/auth'
+import { visible } from '../fixtures/checkout'
 import { expect, test } from '../fixtures/mock'
 
 const PRINCIPAL_ADDRESS = '0xA91F4c2D7e3B5a6C8d9E0f1A2b3C4d5E6f7AE82C'
@@ -89,9 +90,12 @@ test.describe('perfil', () => {
   })
 })
 
-test('pagamento vem preenchido com os dados da conta', async ({ page }, testInfo) => {
-  test.skip(testInfo.project.name === 'mobile', 'no mobile os dados ficam em um acordeão fechado')
+test('pagamento vem preenchido com os dados da conta', async ({ page }) => {
   await signIn(page, ACCOUNTS.colecionador, '/pagamento')
+  await expect(visible(page, 'Confirmar compra')).toBeVisible()
+  // No mobile os dados do colecionador ficam num acordeão, fechado ao abrir a página.
+  const collector = page.getByRole('button', { name: 'Dados do colecionador' })
+  if (await collector.isVisible()) await collector.click()
   await expect(page.getByLabel('Nome de exibição')).toHaveValue('Colecionador')
   await expect(page.getByRole('textbox', { name: 'E-mail', exact: true })).toHaveValue(
     ACCOUNTS.colecionador.email,

@@ -9,6 +9,7 @@ import {
   review,
   visible,
 } from '../fixtures/checkout'
+import { cards, isMobile, searchFor } from '../fixtures/catalog'
 import { expect, test } from '../fixtures/mock'
 
 const storedOrders = (page: Page) =>
@@ -37,6 +38,19 @@ test.describe('checkout com a conta do colecionador', () => {
 
     await page.goto('/carrinho')
     await expect(page.getByText('Seu carrinho está vazio')).toBeVisible()
+  })
+
+  test('clique repetido em pagar cria um só pedido', async ({ page }) => {
+    await openReview(page)
+    // Os dois cliques saem no mesmo instante, antes de a tela trocar o botão para "processando".
+    await payButton(page).evaluate((button: HTMLElement) => {
+      button.click()
+      button.click()
+    })
+
+    await expect(page).toHaveURL(/\/pedidos\/ord_\d+$/)
+    await expect(confirmedHeading(page)).toBeVisible({ timeout: 15_000 })
+    expect(await storedOrders(page)).toBe(1)
   })
 
   test('a revisão usa a taxa da rede da carteira escolhida', async ({ page }) => {
@@ -153,4 +167,34 @@ test('depois de comprada, a edição 1/1 fica esgotada', async ({ page }) => {
 
   await page.goto('/nft/sage-nomad-009')
   await expect(page.getByRole('radio', { name: '1/1, esgotada' }).first()).toBeDisabled()
+})
+
+test('compra completa: do catálogo ao recibo confirmado', async ({ page }, testInfo) => {
+  await signIn(page, ACCOUNTS.colecionador)
+  await searchFor(page, 'golden beat', isMobile(testInfo))
+  await expect(cards(page)).toHaveCount(1)
+  await cards(page).getByRole('link', { name: 'Golden Beat #207', exact: true }).click()
+
+  await expect(page.getByRole('heading', { level: 1, name: 'Golden Beat #207' })).toBeVisible()
+  await page.getByRole('radio', { name: '1/10', exact: true }).first().click()
+  await visible(page, /^(COMPRAR|Comprar NFT)$/)
+    .first()
+    .click()
+  await expect(page).toHaveURL('/carrinho')
+  await expect(page.getByRole('article', { name: 'Golden Beat #207', exact: true })).toBeVisible()
+
+  await visible(page, 'Conectar e finalizar').click()
+  await expect(page).toHaveURL('/pagamento')
+  await openReview(page)
+  await expect(review(page).getByText('Golden Beat #207')).toBeVisible()
+  const total = (await payButton(page).textContent())!.replace('Confirmar e pagar ', '')
+  await placeOrder(page)
+
+  await expect(page.getByRole('heading', { name: 'Aguardando confirmação na rede' })).toBeVisible()
+  await expect(confirmedHeading(page)).toBeVisible({ timeout: 15_000 })
+  await expect(page.getByText('Golden Beat #207').first()).toBeVisible()
+  await expect(page.getByText(total).first()).toBeVisible()
+
+  await page.goto('/carrinho')
+  await expect(page.getByText('Seu carrinho está vazio')).toBeVisible()
 })

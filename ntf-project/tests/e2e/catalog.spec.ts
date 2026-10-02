@@ -1,9 +1,14 @@
-import type { Page } from '@playwright/test'
+import {
+  cards,
+  cardTitles,
+  isMobile,
+  openFilters,
+  resultCount,
+  searchFor,
+  searchParams,
+  sortBy,
+} from '../fixtures/catalog'
 import { expect, test } from '../fixtures/mock'
-
-const cards = (page: Page) => page.locator('#mercado article')
-const cardTitles = (page: Page) => cards(page).locator('h3')
-const resultCount = (page: Page) => page.locator('#mercado [aria-live="polite"]')
 
 test.describe('catálogo', () => {
   test('a primeira página vem da API com destaques e filtros', async ({ page }) => {
@@ -33,6 +38,74 @@ test.describe('catálogo', () => {
 
     await page.goBack()
     await expect(cardTitles(page).first()).toHaveText('Emerald Ape #042')
+  })
+
+  test('filtros combinados e ordenação vão para a URL e o histórico restaura cada passo', async ({
+    page,
+  }, testInfo) => {
+    const mobile = isMobile(testInfo)
+    await page.goto('/')
+    await expect(resultCount(page)).toHaveText('36 NFTs encontrados')
+
+    const filters = await openFilters(page, mobile)
+    await filters.getByRole('button', { name: /^Arte digital/ }).click()
+    await expect(resultCount(page)).toHaveText('5 NFTs encontrados')
+    await filters.getByRole('button', { name: /^Fotografia/ }).click()
+    await expect(resultCount(page)).toHaveText('9 NFTs encontrados')
+    await filters.getByRole('button', { name: /^Ethereum/ }).click()
+    await expect(resultCount(page)).toHaveText('4 NFTs encontrados')
+    await expect(filters.getByRole('button', { name: /^Ethereum/ })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await sortBy(page, 'Maior preço')
+    if (mobile) await page.getByRole('button', { name: 'Ver 4 resultados' }).click()
+
+    await expect(cardTitles(page)).toHaveText([
+      'Ivy Regent #011',
+      'Ivory Baron #088',
+      'Emerald Ape #042',
+      'Pine Collector #063',
+    ])
+    expect(Object.fromEntries(searchParams(page))).toEqual({
+      collections: 'arte-digital,fotografia',
+      networks: 'ethereum',
+      sort: 'maior-preco',
+    })
+
+    await page.goBack()
+    await expect(cards(page)).toHaveCount(4)
+    expect(searchParams(page).get('sort')).toBeNull()
+    await expect(cardTitles(page).first()).not.toHaveText('Ivy Regent #011')
+    await page.goBack()
+    await expect(resultCount(page)).toHaveText('9 NFTs encontrados')
+    await page.goBack()
+    await expect(resultCount(page)).toHaveText('5 NFTs encontrados')
+    await page.goBack()
+    await expect(resultCount(page)).toHaveText('36 NFTs encontrados')
+
+    await page.goForward()
+    await page.goForward()
+    await expect(resultCount(page)).toHaveText('9 NFTs encontrados')
+    const applied = page.getByRole('group', { name: 'Filtros aplicados' })
+    await applied.getByRole('button', { name: 'Remover filtro Arte digital' }).click()
+    await expect(resultCount(page)).toHaveText('4 NFTs encontrados')
+    expect(searchParams(page).get('collections')).toBe('fotografia')
+  })
+
+  test('busca pelo campo e voltar restaura a lista anterior', async ({ page }, testInfo) => {
+    await page.goto('/')
+    await expect(resultCount(page)).toHaveText('36 NFTs encontrados')
+
+    await searchFor(page, 'nomad', isMobile(testInfo))
+    await expect(resultCount(page)).toHaveText('3 NFTs encontrados')
+    await expect(cardTitles(page)).toContainText(['Sage Nomad #009'])
+    expect(searchParams(page).get('q')).toBe('nomad')
+
+    await page.goBack()
+    await expect(resultCount(page)).toHaveText('36 NFTs encontrados')
+    await page.goForward()
+    await expect(resultCount(page)).toHaveText('3 NFTs encontrados')
   })
 
   test('respostas fora de ordem não sobrescrevem a lista atual', async ({ page, mock }) => {
