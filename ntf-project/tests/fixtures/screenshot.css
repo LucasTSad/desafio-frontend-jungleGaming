@@ -1,0 +1,4 @@
+/* Aplicado só nas capturas da regressão visual: o painel de cenários é da demonstração, não do layout. */
+#kurio-mock-panel {
+  display: none !important;
+}

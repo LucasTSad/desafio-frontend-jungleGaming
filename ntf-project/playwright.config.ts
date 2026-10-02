@@ -1,3 +1,4 @@
+import { join } from 'node:path'
 import { defineConfig, devices } from '@playwright/test'
 
 const PORT = 4173
@@ -16,7 +17,16 @@ export default defineConfig({
   // paralelo numa máquina ocupada, essa preparação sozinha passa de 20 s.
   workers: 4,
   timeout: 60_000,
-  expect: { timeout: 10_000 },
+  expect: {
+    timeout: 10_000,
+    // Regressão visual: baselines em pixels CSS (o mobile não fica 2,6x maior), sem animações nem cursor.
+    toHaveScreenshot: {
+      animations: 'disabled',
+      caret: 'hide',
+      scale: 'css',
+      stylePath: join(import.meta.dirname, 'tests/fixtures/screenshot.css'),
+    },
+  },
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   use: {
     baseURL: BASE_URL,
