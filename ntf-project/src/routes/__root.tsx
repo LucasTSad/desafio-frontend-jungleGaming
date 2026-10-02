@@ -10,6 +10,7 @@ import { toast } from 'sonner'
 import { Devtools } from '@/app/devtools'
 import { useRouteLayout } from '@/app/route-layout'
 import type { RouterContext } from '@/app/router'
+import { useRouteFocus } from '@/app/use-route-focus'
 import { LiveRegion } from '@/components/layout/live-region'
 import { MobileTabBar } from '@/components/layout/mobile-tab-bar'
 import { MobileTopBar } from '@/components/layout/mobile-top-bar'
@@ -23,6 +24,7 @@ import { usePreviewCart } from '@/dev/preview-cart'
 import { previewAuth, usePreviewUser } from '@/dev/preview-session'
 import { AuthDialog } from '@/features/auth/components/auth-dialog'
 import { welcomeMessage } from '@/features/auth/messages'
+import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
@@ -38,6 +40,7 @@ function RootLayout() {
   const router = useRouter()
   const signedIn = Boolean(user)
   const wasSignedIn = useRef(signedIn)
+  useRouteFocus(MAIN_CONTENT_ID)
 
   // Quando a sessão termina, reavalia os guards para tirar o usuário das rotas privadas.
   useEffect(() => {
@@ -106,9 +109,11 @@ function RootLayout() {
 }
 
 function NotFound() {
+  useDocumentTitle('Página não encontrada')
+
   return (
     <>
-      <MobileTopBar title="Página não encontrada" />
+      <MobileTopBar title="Página não encontrada" titleAs="p" />
       <section className="page-container flex min-h-[60dvh] flex-col items-center justify-center gap-4 py-16 text-center">
         <p className="text-5xl font-bold text-brand">404</p>
         <h1 className="text-2xl font-bold">Página não encontrada</h1>

@@ -23,6 +23,7 @@ import {
 import { HeroShowcase } from '@/features/home/components/hero-showcase'
 import { MintJournal } from '@/features/home/components/mint-journal'
 import { PromoBanners } from '@/features/home/components/promo-banners'
+import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/')({
   validateSearch: catalogSearchSchema,
@@ -31,6 +32,7 @@ export const Route = createFileRoute('/')({
 })
 
 function HomePage() {
+  useDocumentTitle()
   const search = useCatalogSearch()
   const updateSearch = useUpdateCatalogSearch()
   const catalog = useMemo(() => previewCatalogPage(search), [search])

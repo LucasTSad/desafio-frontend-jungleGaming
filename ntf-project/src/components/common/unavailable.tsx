@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Construction } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useDocumentTitle } from '@/lib/use-document-title'
 
 type UnavailablePageProps = {
   title: string
@@ -8,6 +9,8 @@ type UnavailablePageProps = {
 }
 
 export function UnavailablePage({ title, description }: UnavailablePageProps) {
+  useDocumentTitle(title)
+
   return (
     <section className="page-container flex min-h-[60dvh] flex-col items-center justify-center gap-5 py-16 text-center">
       <span className="flex size-16 items-center justify-center rounded-full bg-surface text-brand">

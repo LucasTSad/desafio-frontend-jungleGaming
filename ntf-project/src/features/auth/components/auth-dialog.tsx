@@ -1,6 +1,6 @@
 import { X } from 'lucide-react'
 import { Tabs } from 'radix-ui'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import {
   Dialog,
   DialogClose,
@@ -34,27 +34,18 @@ export function AuthDialog({
   onSignUp,
   onCloseAutoFocus,
 }: AuthDialogProps) {
-  const returnFocusRef = useRef<HTMLElement | null>(null)
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {/* Centralizado por layout, não por transform, para o texto não borrar em meio pixel. */}
       <DialogContent
         showCloseButton={false}
         onOpenAutoFocus={(event) => {
-          returnFocusRef.current = document.activeElement as HTMLElement | null
           const firstField = (event.currentTarget as HTMLElement | null)?.querySelector('input')
           if (!firstField) return
           event.preventDefault()
           firstField.focus()
         }}
-        onCloseAutoFocus={(event) => {
-          onCloseAutoFocus?.(event)
-          if (event.defaultPrevented) return
-          // Aberto sem DialogTrigger, o Radix não sabe para onde devolver o foco.
-          event.preventDefault()
-          if (returnFocusRef.current?.isConnected) returnFocusRef.current.focus()
-        }}
+        onCloseAutoFocus={onCloseAutoFocus}
         className="inset-x-0 top-[max(1rem,calc(50dvh-18.75rem))] mx-auto max-h-[calc(100dvh-2rem)] max-w-[500px] translate-x-0 translate-y-0 gap-0 overflow-y-auto rounded-md border-b-[10px] border-primary bg-surface p-0 text-foreground ring-0 sm:max-w-[500px]"
       >
         <DialogTitle className="sr-only">Acesse sua conta Kurio</DialogTitle>
