@@ -6,6 +6,8 @@ export type RouteLayoutOptions = {
   nav?: NavSection
   hideFooter?: boolean
   mobileTabBar?: boolean
+  /** A página tem uma barra de ações fixa no rodapé do mobile (ex.: compra no detalhe do NFT). */
+  mobileActionBar?: boolean
 }
 
 declare module '@tanstack/react-router' {

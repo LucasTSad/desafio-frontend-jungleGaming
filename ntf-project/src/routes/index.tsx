@@ -1,21 +1,20 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { SlidersHorizontal } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import {
   previewCatalogFacets,
   previewCatalogPage,
-  previewCatalogStatus,
-  previewFavoriteIds,
+  previewDataStatus,
   previewFeaturedNft,
   previewHeroSlides,
 } from '@/dev/preview-data'
+import { togglePreviewFavorite, usePreviewFavorites } from '@/dev/preview-favorites'
 import { CatalogFilters } from '@/features/catalog/components/catalog-filters'
 import { CatalogSearchForm } from '@/features/catalog/components/catalog-search-form'
 import { CatalogSection } from '@/features/catalog/components/catalog-section'
 import { CatalogSortSelect } from '@/features/catalog/components/catalog-toolbar'
 import { FiltersSheet } from '@/features/catalog/components/filters-sheet'
 import { catalogSearchSchema } from '@/features/catalog/search-params'
-import type { NftSummary } from '@/features/catalog/types'
 import {
   countActiveFilters,
   useCatalogSearch,
@@ -24,7 +23,6 @@ import {
 import { HeroShowcase } from '@/features/home/components/hero-showcase'
 import { MintJournal } from '@/features/home/components/mint-journal'
 import { PromoBanners } from '@/features/home/components/promo-banners'
-import { announce } from '@/lib/announce'
 
 export const Route = createFileRoute('/')({
   validateSearch: catalogSearchSchema,
@@ -36,18 +34,7 @@ function HomePage() {
   const search = useCatalogSearch()
   const updateSearch = useUpdateCatalogSearch()
   const catalog = useMemo(() => previewCatalogPage(search), [search])
-  const [favoriteIds, setFavoriteIds] = useState<ReadonlySet<string>>(
-    () => new Set(previewFavoriteIds),
-  )
-
-  const toggleFavorite = (nft: NftSummary) => {
-    const isFavorite = favoriteIds.has(nft.id)
-    const next = new Set(favoriteIds)
-    if (isFavorite) next.delete(nft.id)
-    else next.add(nft.id)
-    setFavoriteIds(next)
-    announce(`${nft.name} ${isFavorite ? 'removido dos' : 'adicionado aos'} favoritos`)
-  }
+  const favoriteIds = usePreviewFavorites()
 
   const clearFilters = () =>
     updateSearch({
@@ -111,10 +98,10 @@ function HomePage() {
         catalog={catalog}
         facets={previewCatalogFacets}
         featured={previewFeaturedNft}
-        status={previewCatalogStatus}
+        status={previewDataStatus}
         favoriteIds={favoriteIds}
         filters={filters}
-        onToggleFavorite={toggleFavorite}
+        onToggleFavorite={togglePreviewFavorite}
         onChange={updateSearch}
         onClearFilters={clearFilters}
         onRetry={() => window.location.reload()}

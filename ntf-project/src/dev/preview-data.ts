@@ -18,14 +18,14 @@ import type {
   NftArtwork,
   NftSummary,
 } from '@/features/catalog/types'
+import type { EditionId, NftDetail, NftGalleryImage, NftReview } from '@/features/nft/types'
 
-export const previewSession: { user: HeaderUser | null; cartCount: number } = {
+export const previewSession: { user: HeaderUser | null } = {
   user: null,
-  cartCount: 6,
 }
 
-/** Troque para 'loading' ou 'error' para revisar os demais estados do catálogo. */
-export const previewCatalogStatus: CatalogStatus = 'success'
+/** Troque para 'loading' ou 'error' para revisar os demais estados de catálogo, detalhe e carrinho. */
+export const previewDataStatus: CatalogStatus = 'success'
 
 const ARTWORKS = {
   emerald: {
@@ -136,8 +136,6 @@ export const previewHeroSlides: NftSummary[] = [
 
 export const previewFeaturedNft: NftSummary = findNft('Sage Nomad #009')
 
-export const previewFavoriteIds = ['emerald-ape-042', 'golden-beat-207']
-
 export const previewCatalogFacets: CatalogFacets = {
   collections: CATALOG_COLLECTIONS.map(({ slug }) => ({
     value: slug,
@@ -197,4 +195,119 @@ export function previewCatalogPage(search: CatalogSearch): CatalogPage {
     pageCount,
     total: sorted.length,
   }
+}
+
+const EDITION_LABELS: Record<EditionId, string> = {
+  '1-1': '1/1',
+  '1-10': '1/10',
+  '1-50': '1/50',
+  aberta: 'ABERTA',
+}
+
+const GALLERY_FOCUS: { label: string; focus?: NftGalleryImage['focus'] }[] = [
+  { label: 'arte completa' },
+  { label: 'detalhe do rosto', focus: { scale: 1.9, x: 50, y: 32 } },
+  { label: 'detalhe da roupa', focus: { scale: 2.1, x: 50, y: 88 } },
+  { label: 'detalhe do fundo', focus: { scale: 1.6, x: 12, y: 18 } },
+]
+
+const REVIEWS: NftReview[] = [
+  {
+    id: 'r1',
+    author: 'Marina Costa',
+    rating: 5,
+    date: '2026-09-21',
+    comment:
+      'Arte impecável e entrega imediata na carteira. A procedência verificada me deu segurança.',
+  },
+  {
+    id: 'r2',
+    author: 'Diego Alves',
+    rating: 5,
+    date: '2026-09-18',
+    comment: 'Os detalhes em alta resolução são incríveis. Já estou de olho no próximo lançamento.',
+  },
+  {
+    id: 'r3',
+    author: 'Lia Moreira',
+    rating: 4,
+    date: '2026-09-12',
+    comment: 'Ótima curadoria. Só senti falta de mais informações sobre o processo do artista.',
+  },
+  {
+    id: 'r4',
+    author: 'Rafael Nunes',
+    rating: 5,
+    date: '2026-09-05',
+    comment: 'Comprei a edição 1/50 e o acesso exclusivo para colecionadores valeu cada ETH.',
+  },
+]
+
+const networkLabel = (slug: NetworkSlug) =>
+  CATALOG_NETWORKS.find((network) => network.slug === slug)?.label ?? slug
+
+function toDetail(nft: PreviewNft, index: number): NftDetail {
+  const number = nft.name.split('#')[1] ?? '0'
+  const network = networkLabel(nft.network)
+
+  return {
+    ...toSummary(nft),
+    tokenId: `#${number.padStart(4, '0')}`,
+    creator: 'Nova Sato',
+    about: `Um colecionável digital finalizado à mão da coleção Kurio Editions, verificado na ${network}, com arte desbloqueável e acesso para colecionadores.`,
+    story: [
+      `${nft.name} é uma obra digital 1/50 finalizada à mão da coleção Kurio Editions. Cada atributo fica armazenado nos metadados do token e verificado na ${network}. A obra explora identidade, movimento e luz em um mundo digital sem fronteiras.`,
+      'A propriedade inclui a arte em alta resolução, lançamentos exclusivos para colecionadores e um registro permanente de procedência registrada na rede. Nova Sato recebe 5% de direitos autorais nas vendas secundárias, apoiando novos trabalhos e lançamentos da comunidade.',
+    ],
+    networkInfo: `Cunhado na ${network} com procedência imutável e metadados armazenados no IPFS.`,
+    contract: `0x7A${number.padStart(2, '0').slice(-2)}...19E8 • Contrato inteligente ERC-721 verificado.`,
+    royalties:
+      '5% para o criador nas vendas secundárias, pagos automaticamente pelos mercados compatíveis.',
+    attributes: ARTWORK_ATTRIBUTES[nft.artwork.src] ?? [],
+    rating: { average: Math.round((4.8 - (index % 5) * 0.1) * 10) / 10, count: 19 + index * 3 },
+    editions: [
+      { id: '1-1', label: EDITION_LABELS['1-1'], available: index % 3 === 0 ? 0 : 1 },
+      { id: '1-10', label: EDITION_LABELS['1-10'], available: (index % 4) + 2 },
+      { id: '1-50', label: EDITION_LABELS['1-50'], available: 12 + (index % 7) },
+      { id: 'aberta', label: EDITION_LABELS.aberta, available: null },
+    ],
+    gallery: GALLERY_FOCUS.map(({ label, focus }) => ({
+      src: nft.artwork.src,
+      alt: `${nft.artwork.alt} — ${label}`,
+      focus,
+    })),
+  }
+}
+
+const ARTWORK_ATTRIBUTES: Record<string, string[]> = {
+  [ARTWORKS.emerald.src]: ['Óculos', 'Esmeralda', 'Raro'],
+  [ARTWORKS.sage.src]: ['Chapéu bucket', 'Moletom', 'Lilás'],
+  [ARTWORKS.ivory.src]: ['Blazer', 'Gola alta', 'Brinco'],
+  [ARTWORKS.golden.src]: ['Fones', 'Jaqueta', 'Dourado'],
+}
+
+export function previewNftDetail(id: string): NftDetail | undefined {
+  const index = PREVIEW_NFTS.findIndex((nft) => nft.id === id)
+  const nft = PREVIEW_NFTS[index]
+  return nft ? toDetail(nft, index) : undefined
+}
+
+export function previewNftReviews(): NftReview[] {
+  return REVIEWS
+}
+
+/** Outros NFTs da mesma coleção, completados com os mais recentes até 8 itens. */
+export function previewRelatedNfts(id: string): NftSummary[] {
+  const current = PREVIEW_NFTS.find((nft) => nft.id === id)
+  const others = PREVIEW_NFTS.filter((nft) => nft.id !== id)
+  const sameCollection = others.filter((nft) => nft.collection === current?.collection)
+  const rest = others.filter((nft) => nft.collection !== current?.collection)
+  return [...sameCollection, ...rest].slice(0, 8).map(toSummary)
+}
+
+export function previewRecommendations(excludeIds: string[]): NftSummary[] {
+  return PREVIEW_NFTS.filter((nft) => !excludeIds.includes(nft.id))
+    .filter((nft) => nft.isTrending)
+    .slice(0, 10)
+    .map(toSummary)
 }

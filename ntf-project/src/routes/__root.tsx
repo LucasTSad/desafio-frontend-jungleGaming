@@ -11,6 +11,7 @@ import { MAIN_CONTENT_ID, SkipLink } from '@/components/layout/skip-link'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { usePreviewCart } from '@/dev/preview-cart'
 import { previewSession } from '@/dev/preview-data'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
@@ -21,15 +22,12 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootLayout() {
   const layout = useRouteLayout()
   const pathname = useLocation({ select: (location) => location.pathname })
+  const { count: cartCount } = usePreviewCart()
 
   return (
     <TooltipProvider>
       <SkipLink />
-      <SiteHeader
-        activeNav={layout.nav}
-        cartCount={previewSession.cartCount}
-        user={previewSession.user}
-      />
+      <SiteHeader activeNav={layout.nav} cartCount={cartCount} user={previewSession.user} />
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className="outline-none">
         <Outlet />
       </main>
@@ -37,14 +35,13 @@ function RootLayout() {
       {layout.mobileTabBar && (
         <>
           <div aria-hidden="true" className="h-28 md:hidden" />
-          <MobileTabBar
-            activeNav={layout.nav}
-            pathname={pathname}
-            cartCount={previewSession.cartCount}
-          />
+          <MobileTabBar activeNav={layout.nav} pathname={pathname} cartCount={cartCount} />
         </>
       )}
-      <Toaster position="bottom-right" mobileOffset={{ bottom: layout.mobileTabBar ? 112 : 16 }} />
+      <Toaster
+        position="bottom-right"
+        mobileOffset={{ bottom: layout.mobileTabBar ? 112 : layout.mobileActionBar ? 168 : 16 }}
+      />
       <LiveRegion />
       <Devtools />
     </TooltipProvider>
