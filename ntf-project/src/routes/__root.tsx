@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { usePreviewCart } from '@/dev/preview-cart'
-import { previewSession } from '@/dev/preview-data'
+import { usePreviewUser } from '@/dev/preview-session'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
@@ -23,11 +23,12 @@ function RootLayout() {
   const layout = useRouteLayout()
   const pathname = useLocation({ select: (location) => location.pathname })
   const { count: cartCount } = usePreviewCart()
+  const user = usePreviewUser()
 
   return (
     <TooltipProvider>
       <SkipLink />
-      <SiteHeader activeNav={layout.nav} cartCount={cartCount} user={previewSession.user} />
+      <SiteHeader activeNav={layout.nav} cartCount={cartCount} user={user} />
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className="outline-none">
         <Outlet />
       </main>

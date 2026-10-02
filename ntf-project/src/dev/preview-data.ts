@@ -1,7 +1,6 @@
 // Dados de exemplo temporários para validar as telas contra o Figma.
 // Este arquivo será removido quando a API (MSW) for integrada.
 
-import type { HeaderUser } from '@/components/layout/site-header'
 import {
   CATALOG_COLLECTIONS,
   CATALOG_NETWORKS,
@@ -19,10 +18,6 @@ import type {
   NftSummary,
 } from '@/features/catalog/types'
 import type { EditionId, NftDetail, NftGalleryImage, NftReview } from '@/features/nft/types'
-
-export const previewSession: { user: HeaderUser | null } = {
-  user: null,
-}
 
 /** Troque para 'loading' ou 'error' para revisar os demais estados de catálogo, detalhe e carrinho. */
 export const previewDataStatus: CatalogStatus = 'success'
