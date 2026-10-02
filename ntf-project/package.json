@@ -10,7 +10,8 @@
     "typecheck": "tsc -b",
     "lint": "oxlint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "images": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@fontsource-variable/roboto-mono": "^5.3.0",
