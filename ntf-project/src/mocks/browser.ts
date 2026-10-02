@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import { installMockControl } from './control'
 import { handlers } from './handlers'
 import { MockPanel } from './panel/mock-panel'
+import { startRealtime } from './realtime'
 
 export const worker = setupWorker(...handlers)
 
@@ -15,6 +16,7 @@ export async function startMocking() {
     quiet: !import.meta.env.DEV,
   })
   installMockControl()
+  startRealtime()
 
   const container = document.createElement('div')
   container.id = 'kurio-mock-panel'

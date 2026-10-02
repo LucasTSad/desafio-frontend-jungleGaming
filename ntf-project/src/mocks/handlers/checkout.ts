@@ -14,6 +14,7 @@ import {
   createOrder,
   firstTimeInScenario,
   saveQuote,
+  scheduleSettlement,
   settleOrder,
   settleUserOrders,
   toOrderDto,
@@ -73,6 +74,7 @@ export const checkoutHandlers = [
     }
     const body = await readBody(request, createOrderRequestSchema)
     const { order, created } = createOrder(user, key, body)
+    if (created) scheduleSettlement(order.id)
     // "timeout-pedido": o pedido nasce, mas a primeira resposta se perde no caminho.
     if (created && isScenario('timeout-pedido') && firstTimeInScenario('timeout-pedido')) {
       return HttpResponse.error()

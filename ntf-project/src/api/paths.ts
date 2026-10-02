@@ -31,3 +31,7 @@ export const API_PATHS = {
 } as const
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1'
+
+/** Origem do Socket.IO; vazia, usa a mesma origem da página (onde o MSW intercepta a conexão). */
+export const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin
+export const SOCKET_PATH = '/socket.io'

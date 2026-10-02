@@ -1,5 +1,7 @@
 import { updateNft, type NftChange } from './catalog'
+import { settleDueOrders } from './checkout'
 import { DB_STORAGE_KEY, db, mockClock } from './db/store'
+import { realtimeControl } from './realtime'
 import {
   getScenario,
   isScenarioId,
@@ -31,11 +33,17 @@ export type MockControl = {
   setScenario: (id: ScenarioId) => void
   /** Volta às fixtures, limpa os dados do app no navegador e aplica o cenário (padrão: "padrao"). */
   reset: (options?: { scenario?: ScenarioId; seed?: number }) => void
-  /** Avança o relógio do mock (ex.: expirar sessão ou cotação). */
+  /** Avança o relógio do mock (ex.: expirar sessão ou cotação) e resolve os pedidos já vencidos. */
   advanceClock: (ms: number) => void
   now: () => number
   /** Muda preço e/ou estoque de um NFT, como faria o backend real (ex.: outra venda). */
   updateNft: (id: string, change: NftChange) => void
+  /** Liga ou desliga o servidor de eventos; desligado, derruba e recusa as conexões Socket.IO. */
+  setRealtimeOnline: (online: boolean) => void
+  /** A carteira encerra as conexões abertas, o que dispara `wallet.disconnected`. */
+  disconnectWallet: () => void
+  realtimeConnections: () => number
+  realtimeUsers: () => (string | null)[]
 }
 
 export const mockControl: MockControl = {
@@ -50,11 +58,18 @@ export const mockControl: MockControl = {
     clearAppStorage()
     setScenario(scenario)
   },
-  advanceClock: (ms) => mockClock.advance(ms),
+  advanceClock: (ms) => {
+    mockClock.advance(ms)
+    settleDueOrders()
+  },
   now: () => mockClock.now(),
   updateNft: (id, change) => {
     updateNft(id, change)
   },
+  setRealtimeOnline: (online) => realtimeControl.setOnline(online),
+  disconnectWallet: () => realtimeControl.disconnectWallets(),
+  realtimeConnections: () => realtimeControl.connections(),
+  realtimeUsers: () => realtimeControl.connectionUsers(),
 }
 
 declare global {

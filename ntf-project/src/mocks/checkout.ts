@@ -252,6 +252,28 @@ export function settleOrder(orderId: string) {
   })
 }
 
+/**
+ * Resolve o pedido sozinho quando o prazo vence, sem esperar uma leitura; se o relógio do mock
+ * tiver sido atrasado, agenda de novo para o novo prazo.
+ */
+export function scheduleSettlement(orderId: string) {
+  const order = db.get().orders[orderId]
+  if (!order || order.status !== 'pending') return
+  const wait = Math.max(0, Date.parse(order.createdAt) + CONFIRMATION_DELAY_MS - mockClock.now())
+  setTimeout(() => {
+    if (settleOrder(orderId)?.status === 'pending') scheduleSettlement(orderId)
+  }, wait)
+}
+
+/** Depois de mexer no relógio: resolve os pedidos vencidos e reagenda os que ainda faltam. */
+export function settleDueOrders() {
+  for (const order of Object.values(db.get().orders)) {
+    if (order.status === 'pending' && settleOrder(order.id)?.status === 'pending') {
+      scheduleSettlement(order.id)
+    }
+  }
+}
+
 export function settleUserOrders(userId: string) {
   for (const order of Object.values(db.get().orders)) {
     if (order.userId === userId && order.status === 'pending') settleOrder(order.id)

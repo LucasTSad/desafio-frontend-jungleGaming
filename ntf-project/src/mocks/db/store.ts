@@ -112,6 +112,9 @@ export const db = {
 
   /** Toda escrita passa por aqui: persiste e avisa quem acompanha mudanças (ex.: eventos). */
   update<T>(change: (draft: DbState) => T): T {
+    // Parte do que está gravado: outra aba pode ter escrito antes de o evento "storage" chegar aqui,
+    // e gravar por cima de um estado antigo desfaria a mudança dela (ex.: estoque baixado duas vezes).
+    state = readStored() ?? state
     const draft = structuredClone(state)
     const result = change(draft)
     state = draft

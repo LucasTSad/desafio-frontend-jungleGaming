@@ -56,6 +56,8 @@ export type WalletConnectionRecord = {
   network: CheckoutNetworkDto
   address: string
   expiresAt: string
+  /** Preenchido quando a carteira encerra a conexão; vira o evento `wallet.disconnected`. */
+  disconnectedReason?: string
 }
 
 export type OrderRecord = OrderDto & {
