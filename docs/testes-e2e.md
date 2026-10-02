@@ -50,5 +50,7 @@ Falhas guardam screenshot e trace em `test-results/` (`npx playwright show-trace
 - **Página inteira:** sem as barras fixas. Na captura inteira, elas ficariam na altura da primeira tela, por cima do conteúdo.
 - **Primeira tela (só no mobile):** com as barras fixas na posição real.
 - **Painel de cenários:** fica fora de todas as capturas (`tests/fixtures/screenshot.css`), porque é um controle da demonstração, não do layout.
+- **Estabilidade:** antes de capturar, o teste espera cada imagem visível decodificar (`decode()`), não só terminar de baixar. A captura da página inteira tem 30 s para conseguir as duas imagens iguais seguidas que o Playwright exige.
+- **Tolerância:** até 20 pixels diferentes por captura. Com a máquina ocupada, a imagem reduzida do hero às vezes é rasterizada com 4 ou 5 pixels diferentes; uma mudança real de layout ou texto altera centenas.
 
 As baselines ficam em `tests/e2e/visual.spec.ts-snapshots/`. O nome leva o sistema operacional (ex.: `inicio-desktop-win32.png`), porque a renderização de fontes muda entre sistemas. Em outro sistema, gere as baselines dele com `npm run test:visual:update` antes de comparar.

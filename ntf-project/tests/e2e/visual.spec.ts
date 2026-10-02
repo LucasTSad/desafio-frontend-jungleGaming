@@ -7,7 +7,8 @@ import { expect, test } from '../fixtures/mock'
 
 /**
  * Espera a página assentar antes da captura: percorre a página para as imagens com carregamento
- * tardio entrarem, espera todas as visíveis decodificarem e as fontes carregarem, e volta ao topo.
+ * tardio entrarem, espera todas as visíveis carregarem e decodificarem e as fontes carregarem, e
+ * volta ao topo.
  */
 async function settle(page: Page) {
   await page.evaluate(async () => {
@@ -21,6 +22,15 @@ async function settle(page: Page) {
     [...document.images]
       .filter((image) => image.checkVisibility())
       .every((image) => image.complete && image.naturalWidth > 0),
+  )
+  // Com decoding="async", `complete` fica verdadeiro antes de a imagem estar pronta para pintar;
+  // numa máquina ocupada, a primeira captura saía sem algumas delas. O decode() só resolve depois.
+  await page.evaluate(() =>
+    Promise.all(
+      [...document.images]
+        .filter((image) => image.checkVisibility())
+        .map((image) => image.decode().catch(() => undefined)),
+    ),
   )
   await page.evaluate(() => document.fonts.ready)
 }
@@ -38,7 +48,9 @@ async function capture(page: Page, testInfo: TestInfo, name: string) {
       if (getComputedStyle(element).position === 'fixed') element.style.visibility = 'hidden'
     }
   })
-  await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true })
+  // A página inteira do início no desktop tem 1440 × 3715 px: com 4 workers numa máquina ocupada,
+  // as duas capturas iguais seguidas que o Playwright exige passavam dos 10 s padrão.
+  await expect(page).toHaveScreenshot(`${name}.png`, { fullPage: true, timeout: 30_000 })
 }
 
 test.describe('regressão visual', () => {

@@ -20,10 +20,13 @@ export default defineConfig({
   expect: {
     timeout: 10_000,
     // Regressão visual: baselines em pixels CSS (o mobile não fica 2,6x maior), sem animações nem cursor.
+    // Até 20 pixels de diferença: com a máquina ocupada, a imagem reduzida do hero às vezes é
+    // rasterizada com 4 ou 5 pixels diferentes. Uma mudança real de layout ou texto altera centenas.
     toHaveScreenshot: {
       animations: 'disabled',
       caret: 'hide',
       scale: 'css',
+      maxDiffPixels: 20,
       stylePath: join(import.meta.dirname, 'tests/fixtures/screenshot.css'),
     },
   },

@@ -114,10 +114,13 @@ test.describe('teclado e foco', () => {
     await page.goto('/nft/emerald-ape-042')
     const editions = page.getByRole('radiogroup', { name: 'Edição:' }).filter({ visible: true })
     await editions.getByRole('radio', { name: '1/50' }).focus()
-    // O Radix marca o rádio quando o foco chega com a seta ainda pressionada, como numa pessoa real.
-    await page.keyboard.press('ArrowRight', { delay: 50 })
-    await expect(editions.getByRole('radio', { name: 'ABERTA' })).toBeChecked()
-    await expect(editions.getByRole('radio', { name: 'ABERTA' })).toBeFocused()
+    // O Radix marca o rádio quando o foco chega com a seta ainda pressionada, e move o foco num
+    // timer: a seta fica pressionada até o foco chegar, como numa pessoa real, em qualquer máquina.
+    const open = editions.getByRole('radio', { name: 'ABERTA' })
+    await page.keyboard.down('ArrowRight')
+    await expect(open).toBeFocused()
+    await page.keyboard.up('ArrowRight')
+    await expect(open).toBeChecked()
 
     const stepper = page
       .getByRole('group', { name: 'Quantidade de Emerald Ape #042' })
