@@ -39,7 +39,7 @@ Falhas guardam screenshot e trace em `test-results/` (`npx playwright show-trace
 | 9 | Preço e disponibilidade via Socket.IO no checkout | `realtime.spec.ts`: "no checkout" (esgotado bloqueia, novo total na revisão) |
 | 10 | Eventos duplicados ou antigos, desconexão e pedido pendente | `realtime.spec.ts`: duplicados e fora de ordem, reconexão com reconciliação, carteira desconectada, pedido retomado sem socket |
 | 11 | Teclado, foco de diálogos e validação | `accessibility.spec.ts`: atalho para o conteúdo, foco visível, foco preso e devolvido (acesso, filtros, revisão), compra só pelo teclado, erros ligados aos campos, axe WCAG 2.2 A/AA em 8 telas e diálogos |
-| 12 | Skeletons, falha e nova tentativa | `loading.spec.ts`: skeletons no catálogo, detalhe e carrinho, CLS abaixo de 0,1, shimmer parado com movimento reduzido, erro com "Tentar novamente". Também `catalog.spec.ts` (erro do servidor) |
+| 12 | Skeletons, falha e nova tentativa | `loading.spec.ts`: skeletons no catálogo, detalhe e carrinho, troca do skeleton pelo conteúdo sem deslocar o layout (CLS), shimmer parado com movimento reduzido, erro com "Tentar novamente". Também `catalog.spec.ts` (erro do servidor) |
 
 `mocks.spec.ts` cobre a camada de mocks (cenários, latência, reset, painel).
 

@@ -42,7 +42,10 @@ test.describe('rede lenta', () => {
     expect(await layoutShift()).toBeLessThan(0.1)
   })
 
-  test('detalhe mostra o skeleton até a resposta chegar', async ({ page }) => {
+  test('detalhe mostra o skeleton até a resposta chegar, sem deslocar o layout', async ({
+    page,
+  }) => {
+    const layoutShift = await trackLayoutShifts(page)
     await page.goto('/nft/emerald-ape-042')
     const loading = page.getByRole('status', { name: 'Carregando NFT' })
     await expect(loading).toBeVisible()
@@ -54,6 +57,8 @@ test.describe('rede lenta', () => {
       timeout: 15_000,
     })
     await expect(loading).toHaveCount(0)
+    // O rodapé não pode aparecer durante o carregamento e depois ser empurrado para fora da tela.
+    expect(await layoutShift()).toBeLessThan(0.05)
   })
 
   test('carrinho e resumo ficam em skeleton enquanto a API responde', async ({ page }) => {

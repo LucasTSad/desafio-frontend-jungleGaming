@@ -223,8 +223,9 @@ type SlideDotsProps = {
 }
 
 function SlideDots({ slides, selected, onSelect, className }: SlideDotsProps) {
+  // A linha já tem a altura dos botões enquanto os destaques carregam, para o hero não crescer.
   return (
-    <div className={cn('flex', className)}>
+    <div className={cn('flex min-h-6', className)}>
       {slides.map((nft, index) => (
         <button
           key={nft.id}

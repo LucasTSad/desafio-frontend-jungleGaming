@@ -301,9 +301,15 @@ function MobilePurchaseBar({
   )
 }
 
+// A altura mínima de uma tela mantém o rodapé fora da vista até o conteúdo (sempre mais alto que a
+// tela) chegar; sem ela, o rodapé aparece durante o carregamento e depois é empurrado para baixo.
 export function NftDetailSkeleton() {
   return (
-    <div className="page-container pt-4 pb-20 md:pt-12" role="status" aria-label="Carregando NFT">
+    <div
+      className="page-container min-h-dvh pt-4 pb-20 md:pt-12"
+      role="status"
+      aria-label="Carregando NFT"
+    >
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-[592px_minmax(0,1fr)] lg:gap-[13px]">
         <div className="flex gap-12">
           <div className="hidden flex-col gap-4 lg:flex">

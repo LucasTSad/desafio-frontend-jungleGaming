@@ -28,11 +28,11 @@ export function MockPanel() {
 
   return (
     <Popover.Root>
+      {/* Sobe com translate (e transição) quando uma barra fixa aparece: o botão desliza junto
+          com ela, em vez de saltar e deslocar o layout. */}
       <Popover.Trigger
-        className="fixed left-3 z-60 flex items-center gap-1.5 rounded-full border border-border bg-surface-strong px-3 py-1.5 text-xs font-semibold text-foreground shadow-lg shadow-black/40 transition-colors hover:bg-accent"
-        style={{
-          bottom: `calc(var(--fixed-bottom-space, 0px) + ${import.meta.env.DEV ? 60 : 12}px)`,
-        }}
+        className="fixed left-3 z-60 flex translate-y-[calc(-1*var(--fixed-bottom-space,0px))] items-center gap-1.5 rounded-full border border-border bg-surface-strong px-3 py-1.5 text-xs font-semibold text-foreground shadow-lg shadow-black/40 transition-[translate,background-color] duration-300 hover:bg-accent motion-reduce:transition-none"
+        style={{ bottom: import.meta.env.DEV ? 60 : 12 }}
       >
         <FlaskConical className="size-3.5 text-brand" aria-hidden="true" />
         <span>
