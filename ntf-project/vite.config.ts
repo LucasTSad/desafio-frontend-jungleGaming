@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
+      tldts: fileURLToPath(new URL('./src/mocks/vendor/tldts.ts', import.meta.url)),
     },
   },
 })
