@@ -5,6 +5,7 @@ import { Accordion } from 'radix-ui'
 import { useId, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { useForm, useWatch, type FieldErrors } from 'react-hook-form'
 import { StatusMessage } from '@/components/common/status-message'
+import { FixedBottomBar } from '@/components/layout/fixed-bottom-bar'
 import { MobileTopBar } from '@/components/layout/mobile-top-bar'
 import { PageBreadcrumbs } from '@/components/layout/page-breadcrumbs'
 import { Button } from '@/components/ui/button'
@@ -292,7 +293,7 @@ function CheckoutContent({
       </form>
 
       {!isDesktop && (
-        <div className="fixed inset-x-0 bottom-0 z-30 bg-background/95 px-[26px] pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur">
+        <FixedBottomBar className="z-30 bg-background/95 px-[26px] pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur">
           <Button
             {...confirmProps}
             variant="gradient"
@@ -301,7 +302,7 @@ function CheckoutContent({
           >
             Confirmar compra
           </Button>
-        </div>
+        </FixedBottomBar>
       )}
 
       {review && (

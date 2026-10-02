@@ -2,6 +2,7 @@ import { Heart, ShoppingCart, Star } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from 'cn'
 import { QuantityStepper } from '@/components/common/quantity-stepper'
+import { FixedBottomBar } from '@/components/layout/fixed-bottom-bar'
 import { MobileTopBar } from '@/components/layout/mobile-top-bar'
 import { PageBreadcrumbs } from '@/components/layout/page-breadcrumbs'
 import { Button } from '@/components/ui/button'
@@ -255,7 +256,7 @@ function MobilePurchaseBar({
   onAddToCart,
 }: MobilePurchaseBarProps) {
   return (
-    <div className="fixed inset-x-0 bottom-0 z-40 flex flex-col gap-4 rounded-t-[32px] bg-surface px-6 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-16px_40px_rgb(0_0_0/0.45)] md:hidden">
+    <FixedBottomBar className="z-40 flex flex-col gap-4 rounded-t-[32px] bg-surface px-6 pt-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-16px_40px_rgb(0_0_0/0.45)] md:hidden">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground" aria-hidden="true">
@@ -295,7 +296,7 @@ function MobilePurchaseBar({
           <span className="sr-only">Adicionar ao carrinho</span>
         </button>
       </div>
-    </div>
+    </FixedBottomBar>
   )
 }
 

@@ -1,7 +1,9 @@
 import { Link } from '@tanstack/react-router'
 import { cn } from 'cn'
 import { Heart, House, ScanLine, ShoppingCart, UserRound, type LucideIcon } from 'lucide-react'
+import { useRef } from 'react'
 import type { NavSection } from '@/app/route-layout'
+import { useFixedBarSpace } from '@/lib/use-fixed-bar-space'
 
 type MobileTabBarProps = {
   activeNav?: NavSection
@@ -45,6 +47,9 @@ const RIGHT_TABS: TabItem[] = [
 ]
 
 export function MobileTabBar({ activeNav, pathname, cartCount, signedIn }: MobileTabBarProps) {
+  const barRef = useRef<HTMLElement>(null)
+  useFixedBarSpace(barRef, 'bottom')
+
   const renderTab = ({ label, to, Icon, isActive }: TabItem) => {
     const active = isActive(pathname, activeNav)
     const badge = to === '/carrinho' && cartCount > 0 ? cartCount : null
@@ -80,6 +85,7 @@ export function MobileTabBar({ activeNav, pathname, cartCount, signedIn }: Mobil
 
   return (
     <nav
+      ref={barRef}
       aria-label="Navegação inferior"
       className="fixed inset-x-0 bottom-0 z-40 md:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}

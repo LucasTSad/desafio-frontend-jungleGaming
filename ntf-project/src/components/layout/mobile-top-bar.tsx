@@ -1,15 +1,25 @@
-import type { ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { useCanGoBack, useNavigate, useRouter } from '@tanstack/react-router'
 import { ChevronLeft } from 'lucide-react'
+import { useFixedBarSpace } from '@/lib/use-fixed-bar-space'
 
 type MobileTopBarProps = {
   title?: string
   /** Rota usada quando não há histórico para voltar (acesso direto pela URL). */
   fallbackTo?: string
   action?: ReactNode
+  /** Use 'p' quando a página já tem o próprio h1 (ex.: seções da conta). */
+  titleAs?: 'h1' | 'p'
 }
 
-export function MobileTopBar({ title, fallbackTo = '/', action }: MobileTopBarProps) {
+export function MobileTopBar({
+  title,
+  fallbackTo = '/',
+  action,
+  titleAs: Title = 'h1',
+}: MobileTopBarProps) {
+  const barRef = useRef<HTMLDivElement>(null)
+  useFixedBarSpace(barRef, 'top')
   const router = useRouter()
   const navigate = useNavigate()
   const canGoBack = useCanGoBack()
@@ -20,7 +30,10 @@ export function MobileTopBar({ title, fallbackTo = '/', action }: MobileTopBarPr
   }
 
   return (
-    <div className="sticky top-0 z-30 flex h-16 items-center gap-3 bg-background/95 px-4 backdrop-blur md:hidden">
+    <div
+      ref={barRef}
+      className="sticky top-0 z-30 flex min-h-16 items-center gap-3 bg-background/95 px-4 backdrop-blur md:hidden"
+    >
       <button
         type="button"
         onClick={goBack}
@@ -30,7 +43,9 @@ export function MobileTopBar({ title, fallbackTo = '/', action }: MobileTopBarPr
         <span className="sr-only">Voltar</span>
       </button>
       {title ? (
-        <h1 className="flex-1 truncate text-center text-lg font-bold">{title}</h1>
+        <Title className="flex-1 py-2 text-center text-lg leading-6 font-bold text-balance">
+          {title}
+        </Title>
       ) : (
         <span className="flex-1" />
       )}

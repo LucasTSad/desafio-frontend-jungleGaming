@@ -114,6 +114,9 @@
   html {
     @apply bg-background font-sans antialiased;
     -webkit-tap-highlight-color: transparent;
+    /* As barras fixas registram a altura em useFixedBarSpace. */
+    scroll-padding-top: calc(var(--fixed-top-space, 0px) + 0.5rem);
+    scroll-padding-bottom: calc(var(--fixed-bottom-space, 0px) + 0.5rem);
   }
 
   body {
