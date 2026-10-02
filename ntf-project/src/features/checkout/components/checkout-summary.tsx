@@ -83,7 +83,10 @@ export function CheckoutTotals({ totals, coupon, showPromoLink = false }: Checko
       {showPromoLink && (
         <p className="mb-3 text-center text-sm">
           {coupon ? <>Cupom {coupon.code} aplicado. </> : <>Tem um código promocional? </>}
-          <Link to="/carrinho" className="text-brand hover:underline">
+          <Link
+            to="/carrinho"
+            className="text-brand underline underline-offset-2 hover:no-underline"
+          >
             {coupon ? 'Alterar no carrinho' : 'Aplique aqui'}
           </Link>
         </p>

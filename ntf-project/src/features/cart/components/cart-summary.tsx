@@ -47,10 +47,11 @@ export function CartSummary({
           value={`(-) ${formatEth(totals.discountEth).replace(' ETH', '')}`}
           srSuffix=" ETH"
         />
-        <div>
-          <SummaryRow label="Taxa de rede" value={formatEth(totals.networkFeeEth)} />
-          <p className="mt-1 text-right text-xs text-brand">Taxa estimada</p>
-        </div>
+        <SummaryRow
+          label="Taxa de rede"
+          value={formatEth(totals.networkFeeEth)}
+          note="Taxa estimada"
+        />
         <div className="mt-2 flex items-center justify-between gap-4 font-bold">
           <dt>Total</dt>
           <dd className="text-xl text-brand md:text-base">{formatEth(totals.totalEth)}</dd>
@@ -81,15 +82,19 @@ export function CartSummary({
   )
 }
 
-type SummaryRowProps = { label: string; value: string; srSuffix?: string }
+type SummaryRowProps = { label: string; value: string; srSuffix?: string; note?: string }
 
-function SummaryRow({ label, value, srSuffix }: SummaryRowProps) {
+// A observação fica dentro do <dd>: o <dl> só aceita pares dt/dd (ou um div com eles) como filhos.
+function SummaryRow({ label, value, srSuffix, note }: SummaryRowProps) {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className={cn('flex justify-between gap-4', note ? 'items-start' : 'items-center')}>
       <dt>{label}</dt>
-      <dd className="text-right whitespace-nowrap">
-        {value}
-        {srSuffix && <span className="sr-only">{srSuffix}</span>}
+      <dd className="flex flex-col items-end text-right whitespace-nowrap">
+        <span>
+          {value}
+          {srSuffix && <span className="sr-only">{srSuffix}</span>}
+        </span>
+        {note && <span className="mt-1 text-xs text-brand">{note}</span>}
       </dd>
     </div>
   )
