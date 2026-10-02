@@ -80,6 +80,8 @@ type User = { id: string; displayName: string; username: string; email: string; 
 
 - Os parâmetros são os mesmos da URL do catálogo: listas separadas por vírgula, preços em string ETH e `page` começando em 1.
 - O cliente cancela a consulta anterior pelo `AbortSignal` do Query e descarta respostas obsoletas.
+- `facets` descreve o catálogo inteiro (não muda com os filtros), para as contagens da barra lateral ficarem estáveis. No cenário `vazio`, listagem, relacionados e recomendações voltam vazios; os destaques continuam.
+- No cliente, cada combinação de filtros é uma chave própria (`['nfts', 'list', query]`): uma resposta atrasada só atualiza a própria chave e nunca a lista em tela. Enquanto a próxima página carrega, a anterior continua visível.
 
 ```ts
 type NftSummary = {
@@ -111,6 +113,7 @@ type NftDetail = NftSummary & {
 | DELETE | `/me/favorites/:nftId` | `204` (idempotente) |
 
 - Esta é a **atualização otimista** obrigatória: o coração muda na hora e volta ao estado anterior se a mutation falhar, com aviso acessível.
+- O clique só decide entre favoritar e remover depois de conhecer a lista (`ensureQueryData`); vários cliques seguidos só sincronizam com a API quando o último termina. Visitante recebe um convite para entrar.
 - Visitante que toca no coração vai para o login e volta ao NFT.
 
 ## 5. Carrinho
