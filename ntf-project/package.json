@@ -11,7 +11,11 @@
     "lint": "oxlint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "images": "node scripts/optimize-images.mjs"
+    "images": "node scripts/optimize-images.mjs",
+    "test": "playwright test",
+    "test:unit": "playwright test --project=unit",
+    "test:e2e": "playwright test --project=desktop --project=mobile",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "@fontsource-variable/roboto-mono": "^5.3.0",

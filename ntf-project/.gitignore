@@ -25,3 +25,8 @@ dist-ssr
 
 # TanStack Router (arquivos temporários do plugin)
 .tanstack
+
+# Playwright
+test-results
+playwright-report
+blob-report
