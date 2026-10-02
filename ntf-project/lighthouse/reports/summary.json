@@ -1,0 +1,385 @@
+{
+  "generatedAt": "02/10/2026, 19:32",
+  "environment": {
+    "lighthouse": "13.5.0",
+    "axeCore": "4.13.0",
+    "chromium": "153.0.8010.12",
+    "chromiumPath": "C:\\Users\\sakam\\AppData\\Local\\ms-playwright\\chromium-1243\\chrome-win64\\chrome.exe",
+    "playwright": "1.63.0",
+    "vite": "8.3.2",
+    "node": "v25.8.1",
+    "os": "Windows 11 Home Single Language 10.0.26200 (x64)",
+    "cpu": "13th Gen Intel(R) Core(TM) i5-13450HX (16 threads)",
+    "memory": "16 GB",
+    "benchmarkIndex": 2399,
+    "protocol": "h2"
+  },
+  "profiles": [
+    {
+      "profile": {
+        "id": "mobile",
+        "name": "Mobile",
+        "config": "lighthouse/mobile.config.mjs"
+      },
+      "settings": {
+        "throttlingMethod": "simulate",
+        "width": 412,
+        "height": 823,
+        "deviceScaleFactor": 1.75,
+        "rttMs": 150,
+        "throughputKbps": 1638.4,
+        "cpuSlowdownMultiplier": 4
+      }
+    },
+    {
+      "profile": {
+        "id": "desktop",
+        "name": "Desktop",
+        "config": "lighthouse/desktop.config.mjs"
+      },
+      "settings": {
+        "throttlingMethod": "simulate",
+        "width": 1350,
+        "height": 940,
+        "deviceScaleFactor": 1,
+        "rttMs": 40,
+        "throughputKbps": 10240,
+        "cpuSlowdownMultiplier": 1
+      }
+    }
+  ],
+  "results": [
+    {
+      "page": {
+        "id": "inicio",
+        "name": "Início",
+        "path": "/"
+      },
+      "profile": {
+        "id": "mobile",
+        "name": "Mobile",
+        "config": "lighthouse/mobile.config.mjs"
+      },
+      "runs": [
+        {
+          "file": "inicio-mobile-1",
+          "scores": {
+            "performance": 92,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 2849.746,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 46,
+            "first-contentful-paint": 2510.246,
+            "speed-index": 2510.246
+          },
+          "benchmarkIndex": 2369.5,
+          "warnings": []
+        },
+        {
+          "file": "inicio-mobile-2",
+          "scores": {
+            "performance": 93,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 2695.127,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 52,
+            "first-contentful-paint": 2435.127,
+            "speed-index": 2435.127
+          },
+          "benchmarkIndex": 2063.5,
+          "warnings": []
+        },
+        {
+          "file": "inicio-mobile-3",
+          "scores": {
+            "performance": 91,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 2824.996,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 108.5,
+            "first-contentful-paint": 2496.496,
+            "speed-index": 2496.496
+          },
+          "benchmarkIndex": 2826,
+          "warnings": []
+        }
+      ],
+      "median": {
+        "scores": {
+          "performance": 92,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100
+        },
+        "metrics": {
+          "largest-contentful-paint": 2824.996,
+          "cumulative-layout-shift": 0,
+          "total-blocking-time": 52,
+          "first-contentful-paint": 2496.496,
+          "speed-index": 2496.496
+        }
+      }
+    },
+    {
+      "page": {
+        "id": "inicio",
+        "name": "Início",
+        "path": "/"
+      },
+      "profile": {
+        "id": "desktop",
+        "name": "Desktop",
+        "config": "lighthouse/desktop.config.mjs"
+      },
+      "runs": [
+        {
+          "file": "inicio-desktop-1",
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 613.929,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 0,
+            "first-contentful-paint": 522.929,
+            "speed-index": 542.4410642354912
+          },
+          "benchmarkIndex": 2158,
+          "warnings": []
+        },
+        {
+          "file": "inicio-desktop-2",
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 609.5029999999999,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 0,
+            "first-contentful-paint": 543.0029999999999,
+            "speed-index": 551.891986341234
+          },
+          "benchmarkIndex": 2600,
+          "warnings": []
+        },
+        {
+          "file": "inicio-desktop-3",
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 612.278,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 0,
+            "first-contentful-paint": 522.278,
+            "speed-index": 558.7238783734592
+          },
+          "benchmarkIndex": 2817,
+          "warnings": []
+        }
+      ],
+      "median": {
+        "scores": {
+          "performance": 100,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100
+        },
+        "metrics": {
+          "largest-contentful-paint": 612.278,
+          "cumulative-layout-shift": 0,
+          "total-blocking-time": 0,
+          "first-contentful-paint": 522.929,
+          "speed-index": 551.891986341234
+        }
+      }
+    },
+    {
+      "page": {
+        "id": "detalhe",
+        "name": "Detalhe do NFT",
+        "path": "/nft/emerald-ape-042"
+      },
+      "profile": {
+        "id": "mobile",
+        "name": "Mobile",
+        "config": "lighthouse/mobile.config.mjs"
+      },
+      "runs": [
+        {
+          "file": "detalhe-mobile-1",
+          "scores": {
+            "performance": 92,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 2779.8615,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 32,
+            "first-contentful-paint": 2494.8615,
+            "speed-index": 2494.8615
+          },
+          "benchmarkIndex": 2033,
+          "warnings": []
+        },
+        {
+          "file": "detalhe-mobile-2",
+          "scores": {
+            "performance": 92,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 2778.4065,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 47.5,
+            "first-contentful-paint": 2493.4065,
+            "speed-index": 2493.4065
+          },
+          "benchmarkIndex": 2428,
+          "warnings": []
+        },
+        {
+          "file": "detalhe-mobile-3",
+          "scores": {
+            "performance": 93,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 2763.59,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 17,
+            "first-contentful-paint": 2488.59,
+            "speed-index": 2488.59
+          },
+          "benchmarkIndex": 3136.5,
+          "warnings": []
+        }
+      ],
+      "median": {
+        "scores": {
+          "performance": 92,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100
+        },
+        "metrics": {
+          "largest-contentful-paint": 2778.4065,
+          "cumulative-layout-shift": 0,
+          "total-blocking-time": 32,
+          "first-contentful-paint": 2493.4065,
+          "speed-index": 2493.4065
+        }
+      }
+    },
+    {
+      "page": {
+        "id": "detalhe",
+        "name": "Detalhe do NFT",
+        "path": "/nft/emerald-ape-042"
+      },
+      "profile": {
+        "id": "desktop",
+        "name": "Desktop",
+        "config": "lighthouse/desktop.config.mjs"
+      },
+      "runs": [
+        {
+          "file": "detalhe-desktop-1",
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 587.001,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 0,
+            "first-contentful-paint": 531.501,
+            "speed-index": 544.7986800658268
+          },
+          "benchmarkIndex": 2094.5,
+          "warnings": []
+        },
+        {
+          "file": "detalhe-desktop-2",
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 600.245,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 0,
+            "first-contentful-paint": 523.745,
+            "speed-index": 549.2979085856134
+          },
+          "benchmarkIndex": 2255.5,
+          "warnings": []
+        },
+        {
+          "file": "detalhe-desktop-3",
+          "scores": {
+            "performance": 100,
+            "accessibility": 100,
+            "best-practices": 100,
+            "seo": 100
+          },
+          "metrics": {
+            "largest-contentful-paint": 595.379,
+            "cumulative-layout-shift": 0,
+            "total-blocking-time": 0,
+            "first-contentful-paint": 539.379,
+            "speed-index": 539.379
+          },
+          "benchmarkIndex": 3031,
+          "warnings": []
+        }
+      ],
+      "median": {
+        "scores": {
+          "performance": 100,
+          "accessibility": 100,
+          "best-practices": 100,
+          "seo": 100
+        },
+        "metrics": {
+          "largest-contentful-paint": 595.379,
+          "cumulative-layout-shift": 0,
+          "total-blocking-time": 0,
+          "first-contentful-paint": 531.501,
+          "speed-index": 544.7986800658268
+        }
+      }
+    }
+  ]
+}

@@ -9,3 +9,6 @@
 *.ico binary
 *.woff binary
 *.woff2 binary
+
+# Relatórios do Lighthouse: gerados pelo npm run lighthouse, sem diff linha a linha.
+ntf-project/lighthouse/reports/** -diff linguist-generated
