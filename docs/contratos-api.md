@@ -174,6 +174,8 @@ type Quote = {
 ```
 
 - A cotação revalida preço, disponibilidade, cupom e taxa de rede de uma vez. Ela é o que o diálogo "Revisar compra" mostra e o que o pedido congela.
+- O cliente cota duas vezes: ao abrir a revisão (o diálogo mostra os valores da API, inclusive a taxa da rede escolhida) e de novo no "Confirmar e pagar". Se a segunda cotação diferir da revisada, o diálogo mostra "O total mudou" e pede nova confirmação.
+- Validade: cotação por 2 minutos; conexão de carteira por 10 minutos (reaproveitada entre tentativas da mesma revisão).
 - A desconexão da carteira durante o pagamento sai pelo evento `wallet.disconnected` (seção 9).
 
 ## 7. Pedidos (autenticado)
@@ -196,7 +198,10 @@ type Order = {
 }
 ```
 
-- **Idempotência:** o cliente gera a chave quando a revisão abre e a reutiliza em cliques repetidos e reenvios após timeout. Ela só é trocada depois de uma nova cotação. A chave pendente fica no `sessionStorage` para sobreviver a um refresh.
+- **Idempotência:** o cliente gera a chave quando a revisão abre e a reutiliza em cliques repetidos e reenvios após timeout. Ela só é trocada depois de uma nova cotação. Reenvios com a mesma chave e o mesmo corpo devolvem o pedido já criado.
+- **Retomada após refresh:** em vez de guardar a chave, a tela de pagamento consulta `GET /me/orders?status=pending` e, havendo pedido pendente, mostra um aviso com o link "Acompanhar o pedido".
+- **Confirmação:** o pedido fica pendente por 3 s (relógio do mock) e é resolvido na próxima leitura (`GET /orders/:id`, `GET /me/orders` ou `GET /cart`). A tela do pedido consulta a cada 1,5 s enquanto ele estiver pendente; no 4f o evento `order.updated` passa a avisar sem esperar a consulta.
+- **Estoque:** ao confirmar, as edições limitadas compradas perdem as unidades correspondentes (uma 1/1 comprada fica esgotada).
 - **Itens no carrinho:** só saem do carrinho quando o pedido é **confirmado**, e apenas as quantidades compradas. Se o pedido for recusado, nada muda.
 - O recibo só é exibido com `status: confirmed`.
 
@@ -259,6 +264,7 @@ type WalletDisconnected = RealtimeEvent<'wallet.disconnected', 'wallet-connectio
   - rede: `padrao`, `lento`, `fora-de-ordem`, `offline`, `erro-servidor` (503 em tudo), `instavel` (cada requisição falha 3 vezes e funciona na 4ª);
   - dados: `vazio`, `sessao-expirada`, `cupom-expirado`, `preco-alterado`, `edicao-esgotada`;
   - compra: `carteira-recusada`, `timeout-pedido`, `pagamento-recusado`;
+  - `preco-alterado` e `edicao-esgotada` agem na **segunda** cotação depois da ativação (a do "Confirmar e pagar"), mudando a primeira linha do carrinho. `carteira-recusada` recusa só a primeira conexão; `timeout-pedido` cria o pedido e perde só a primeira resposta. Cada efeito vale uma vez por ativação, mesmo após recarregar a página;
   - tempo real: `eventos-duplicados`.
 - **Verificação:** `GET /health` responde `{ status, scenario, seed }` e passa pelas mesmas condições de rede.
 - **Controle:** pelo parâmetro `?cenario=…` e pelo painel "API simulada" no canto inferior esquerdo. Os testes usam `window.__kurioMock` com `reset()`, `setScenario()`, `advanceClock(ms)` e, no 4f, `emit()`. O reset restaura integralmente as fixtures e apaga os dados do app no navegador (chaves `kurio-*`).

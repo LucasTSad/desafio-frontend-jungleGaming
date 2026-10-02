@@ -16,7 +16,13 @@ import type { AppliedCoupon, CartLine, CartTotals } from '@/features/cart/types'
 import { announce } from '@/lib/announce'
 import { useMediaQuery } from '@/lib/use-media-query'
 import { checkoutSchema, type CheckoutInput, type CheckoutValues } from '../schemas'
-import type { CheckoutQuote, PaymentResult, SavedWallet, WalletProvider } from '../types'
+import type {
+  CheckoutQuote,
+  PaymentResult,
+  QuoteResult,
+  SavedWallet,
+  WalletProvider,
+} from '../types'
 import { CheckoutItems, CheckoutTotals } from './checkout-summary'
 import { CollectorFields } from './collector-fields'
 import { ReviewDialog, type PayRequest } from './review-dialog'
@@ -29,12 +35,16 @@ type CheckoutViewProps = {
   coupon?: AppliedCoupon
   savedWallets: SavedWallet[]
   defaultValues: Partial<CheckoutInput>
+  /** Pede a cotação à API antes de abrir a revisão. */
+  onQuote: (values: CheckoutValues) => Promise<QuoteResult>
   onPay: (values: CheckoutValues, request: PayRequest) => Promise<PaymentResult>
   onPlaced: (orderId: string) => void
   onRetry: () => void
+  /** Aviso exibido acima do formulário (ex.: pagamento anterior ainda em processamento). */
+  notice?: ReactNode
 }
 
-export function CheckoutView(props: CheckoutViewProps) {
+export function CheckoutView({ notice, ...props }: CheckoutViewProps) {
   const isDesktop = useMediaQuery('(min-width: 768px)')
 
   return (
@@ -49,6 +59,7 @@ export function CheckoutView(props: CheckoutViewProps) {
           ]}
         />
         <h1 className="sr-only max-md:hidden">Pagamento</h1>
+        {notice}
         <CheckoutContent {...props} isDesktop={isDesktop} />
       </div>
     </>
@@ -77,6 +88,7 @@ function CheckoutContent({
   coupon,
   savedWallets,
   defaultValues,
+  onQuote,
   onPay,
   onPlaced,
   onRetry,
@@ -87,6 +99,8 @@ function CheckoutContent({
   const providerRef = useRef<HTMLButtonElement>(null)
   const [openSections, setOpenSections] = useState<string[]>([])
   const [review, setReview] = useState<{ values: CheckoutValues; quote: CheckoutQuote }>()
+  const [quoting, setQuoting] = useState(false)
+  const [quoteError, setQuoteError] = useState<string>()
   const form = useForm<CheckoutInput, unknown, CheckoutValues>({
     resolver: zodResolver(checkoutSchema),
     defaultValues,
@@ -175,8 +189,18 @@ function CheckoutContent({
   }
 
   const billableLines = lines.filter((line) => line.status?.kind !== 'unavailable')
-  const openReview = (values: CheckoutValues) =>
-    setReview({ values, quote: { lines: billableLines, totals } })
+  async function openReview(values: CheckoutValues) {
+    if (quoting) return
+    setQuoting(true)
+    setQuoteError(undefined)
+    const result = await onQuote(values)
+    setQuoting(false)
+    if (result.ok) setReview({ values, quote: result.quote })
+    else {
+      setQuoteError(result.message)
+      announce(result.message, 'assertive')
+    }
+  }
 
   const collectorFields = (
     <CollectorFields
@@ -219,13 +243,29 @@ function CheckoutContent({
       antes de pagar.
     </p>
   )
+  const quoteNotice = quoteError && (
+    <p
+      id={`${formId}-quote-error`}
+      role="alert"
+      className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+    >
+      {quoteError}{' '}
+      <Link to="/carrinho" className="font-semibold underline">
+        Revisar o carrinho
+      </Link>
+    </p>
+  )
+  const describedBy = [blocked && blockedId, quoteError && `${formId}-quote-error`]
+    .filter(Boolean)
+    .join(' ')
   const confirmProps = {
     type: 'submit' as const,
     form: formId,
-    'aria-disabled': blocked || undefined,
-    'aria-describedby': blocked ? blockedId : undefined,
-    onClick: (event: MouseEvent) => blocked && event.preventDefault(),
+    'aria-disabled': blocked || quoting || undefined,
+    'aria-describedby': describedBy || undefined,
+    onClick: (event: MouseEvent) => (blocked || quoting) && event.preventDefault(),
   }
+  const confirmLabel = quoting ? 'Revisando…' : 'Confirmar compra'
 
   return (
     <>
@@ -256,8 +296,9 @@ function CheckoutContent({
               <CheckoutTotals totals={totals} coupon={coupon} showPromoLink />
               {walletPickers}
               {blockedNotice}
+              {quoteNotice}
               <Button {...confirmProps} className="h-[45px] w-full text-base font-bold">
-                Confirmar compra
+                {confirmLabel}
               </Button>
             </aside>
           </div>
@@ -284,6 +325,7 @@ function CheckoutContent({
               </MobileSection>
             </Accordion.Root>
             {blockedNotice}
+            {quoteNotice}
             <p className="flex items-baseline justify-end gap-6 text-lg font-bold">
               Total:
               <span className="text-brand">{formatEth(totals.totalEth)}</span>
@@ -300,7 +342,7 @@ function CheckoutContent({
             size="pill"
             className="h-14 w-full font-bold"
           >
-            Confirmar compra
+            {confirmLabel}
           </Button>
         </FixedBottomBar>
       )}
@@ -311,7 +353,6 @@ function CheckoutContent({
           onOpenChange={(open) => !open && setReview(undefined)}
           values={review.values}
           quote={review.quote}
-          coupon={coupon}
           onPay={(request) => onPay(review.values, request)}
           onPlaced={onPlaced}
         />

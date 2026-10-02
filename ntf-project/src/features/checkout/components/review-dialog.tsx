@@ -10,7 +10,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { formatEth } from '@/features/catalog/format'
-import type { AppliedCoupon } from '@/features/cart/types'
 import { shortenHex } from '../format'
 import type { CheckoutValues } from '../schemas'
 import {
@@ -33,7 +32,6 @@ type ReviewDialogProps = {
   onOpenChange: (open: boolean) => void
   values: CheckoutValues
   quote: CheckoutQuote
-  coupon?: AppliedCoupon
   onPay: (request: PayRequest) => Promise<PaymentResult>
   onPlaced: (orderId: string) => void
 }
@@ -75,7 +73,6 @@ type ReviewBodyProps = Omit<ReviewDialogProps, 'open' | 'onOpenChange'> & {
 function ReviewBody({
   values,
   quote: initialQuote,
-  coupon,
   onPay,
   onPlaced,
   onBusyChange,
@@ -145,7 +142,7 @@ function ReviewBody({
         <dd>{providerLabel(values.provider)}</dd>
       </dl>
 
-      <CheckoutTotals totals={quote.totals} coupon={coupon} />
+      <CheckoutTotals totals={quote.totals} coupon={quote.coupon} />
 
       {phase.kind === 'quote-changed' && (
         <div

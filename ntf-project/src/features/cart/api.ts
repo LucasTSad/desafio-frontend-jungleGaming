@@ -297,35 +297,3 @@ export async function mergeGuestCart(queryClient: QueryClient, userId: string) {
     toast.error('Não foi possível juntar o carrinho de visitante à sua conta.')
   }
 }
-
-/**
- * Tira do carrinho da conta o que foi comprado (e o cupom usado). Temporário: no 4e quem faz
- * isso é a API, ao confirmar o pedido.
- */
-export async function removePurchased(
-  queryClient: QueryClient,
-  userId: string,
-  items: { id: string; quantity: number }[],
-) {
-  const key = cartKey(userId, null)
-  const current = await queryClient.fetchQuery(cartQueryOptions(key))
-  for (const item of items) {
-    const line = current.lines.find((candidate) => candidate.id === item.id)
-    if (!line) continue
-    const remaining = line.quantity - item.quantity
-    const cart = await apiRequest(
-      cartSchema,
-      remaining > 0
-        ? { method: 'PATCH', url: API_PATHS.cartItem(line.id), data: { quantity: remaining } }
-        : { method: 'DELETE', url: API_PATHS.cartItem(line.id) },
-    )
-    storeCart(queryClient, key, cart)
-  }
-  if (current.coupon) {
-    storeCart(
-      queryClient,
-      key,
-      await apiRequest(cartSchema, { method: 'DELETE', url: API_PATHS.cartCoupon }),
-    )
-  }
-}

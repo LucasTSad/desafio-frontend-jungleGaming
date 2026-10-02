@@ -1,4 +1,4 @@
-import type { CartLine, CartTotals } from '@/features/cart/types'
+import type { AppliedCoupon, CartLine, CartTotals } from '@/features/cart/types'
 
 /** Redes aceitas no pagamento: as duas são EVM, por isso o endereço segue o formato 0x. */
 export const CHECKOUT_NETWORKS = [
@@ -31,11 +31,15 @@ export type SavedWallet = {
   provider: WalletProvider
 }
 
-/** Cotação usada na revisão: itens e valores que o pedido vai congelar. */
+/** Cotação da API mostrada na revisão: itens e valores que o pedido vai congelar. */
 export type CheckoutQuote = {
+  id: string
   lines: CartLine[]
   totals: CartTotals
+  coupon?: AppliedCoupon
 }
+
+export type QuoteResult = { ok: true; quote: CheckoutQuote } | { ok: false; message: string }
 
 export type PaymentStep = 'connecting' | 'quoting' | 'signing'
 
