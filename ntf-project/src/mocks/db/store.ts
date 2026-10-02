@@ -3,7 +3,7 @@ import { USER_FIXTURES } from '../fixtures/users'
 import type { CartRecord, DbState } from './types'
 
 /** Mudar a estrutura do banco exige subir a versão: dados antigos são descartados no carregamento. */
-const SCHEMA_VERSION = 1
+const SCHEMA_VERSION = 2
 export const DB_STORAGE_KEY = 'kurio-mock-db'
 export const DEFAULT_SEED = 20261002
 
@@ -82,6 +82,18 @@ function readStored(): DbState | null {
 
 let state: DbState = readStored() ?? createSeedState()
 const listeners = new Set<(state: DbState) => void>()
+
+// Cada aba roda o próprio mock; ao gravar, as outras abas recarregam o estado para enxergar a mesma
+// "base de dados" (ex.: sessão criada em uma aba vale nas demais).
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key !== DB_STORAGE_KEY) return
+    const next = readStored()
+    if (!next) return
+    state = next
+    for (const listener of listeners) listener(state)
+  })
+}
 
 function persist() {
   try {

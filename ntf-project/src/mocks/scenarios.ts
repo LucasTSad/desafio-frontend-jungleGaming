@@ -1,4 +1,4 @@
-import { DEFAULT_SEED } from './db/store'
+import { DEFAULT_SEED, mockClock } from './db/store'
 
 type NetworkProfile = {
   /** Faixa de latência em ms; o valor exato sai de um gerador com semente fixa. */
@@ -102,39 +102,54 @@ export function isScenarioId(value: unknown): value is ScenarioId {
   return typeof value === 'string' && value in SCENARIOS
 }
 
-function readInitialScenario(): ScenarioId {
+type ScenarioState = { id: ScenarioId; activatedAt: number }
+
+function store(state: ScenarioState) {
   try {
-    const fromUrl = new URLSearchParams(window.location.search).get(SCENARIO_QUERY_PARAM)
-    if (isScenarioId(fromUrl)) {
-      localStorage.setItem(SCENARIO_STORAGE_KEY, fromUrl)
-      return fromUrl
-    }
-    const stored = localStorage.getItem(SCENARIO_STORAGE_KEY)
-    return isScenarioId(stored) ? stored : 'padrao'
-  } catch {
-    return 'padrao'
-  }
-}
-
-let current: ScenarioId = readInitialScenario()
-
-export function getScenario(): ScenarioId {
-  return current
-}
-
-export function isScenario(id: ScenarioId) {
-  return current === id
-}
-
-export function setScenario(id: ScenarioId) {
-  current = id
-  resetRandom()
-  failures.clear()
-  try {
-    localStorage.setItem(SCENARIO_STORAGE_KEY, id)
+    localStorage.setItem(SCENARIO_STORAGE_KEY, JSON.stringify(state))
   } catch {
     // Sem storage, o cenário vale só até recarregar a página.
   }
+}
+
+function readInitialScenario(): ScenarioState {
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get(SCENARIO_QUERY_PARAM)
+    if (isScenarioId(fromUrl)) {
+      const state = { id: fromUrl, activatedAt: mockClock.now() }
+      store(state)
+      return state
+    }
+    const stored = JSON.parse(localStorage.getItem(SCENARIO_STORAGE_KEY) ?? 'null') as unknown
+    if (stored && typeof stored === 'object' && 'id' in stored && isScenarioId(stored.id)) {
+      return stored as ScenarioState
+    }
+  } catch {
+    // Valor antigo ou inválido: volta ao padrão.
+  }
+  return { id: 'padrao', activatedAt: 0 }
+}
+
+let current: ScenarioState = readInitialScenario()
+
+export function getScenario(): ScenarioId {
+  return current.id
+}
+
+export function isScenario(id: ScenarioId) {
+  return current.id === id
+}
+
+/** Momento (no relógio do mock) em que o cenário atual foi ativado. */
+export function getScenarioActivatedAt() {
+  return current.activatedAt
+}
+
+export function setScenario(id: ScenarioId) {
+  current = { id, activatedAt: mockClock.now() }
+  resetRandom()
+  failures.clear()
+  store(current)
 }
 
 /** Gerador mulberry32: a mesma semente produz a mesma sequência de latências. */
@@ -156,7 +171,7 @@ export function resetRandom(seed = DEFAULT_SEED) {
 }
 
 export function currentNetwork(): NetworkProfile {
-  return SCENARIOS[current].network
+  return SCENARIOS[current.id].network
 }
 
 export function nextLatency(): number {

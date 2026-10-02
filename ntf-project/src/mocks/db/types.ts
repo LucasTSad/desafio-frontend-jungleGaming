@@ -28,7 +28,7 @@ export type UserRecord = {
   }
 }
 
-export type SessionRecord = { token: string; userId: string; expiresAt: string }
+export type SessionRecord = { token: string; userId: string; createdAt: number; expiresAt: string }
 
 export type CartLineRecord = {
   id: string

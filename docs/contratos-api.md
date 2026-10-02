@@ -65,6 +65,8 @@ type User = { id: string; displayName: string; username: string; email: string; 
 - O mock guarda só **hash da senha** (SHA-256 com salt por usuário, via Web Crypto); nenhuma senha fica em claro nas fixtures.
 - O token tem validade de 30 min, renovada a cada requisição autenticada. Um cenário força a expiração.
 - **Decisão:** o token fica em `localStorage`, então a sessão sobrevive a refresh e a novas abas. Cookie `httpOnly` não é simulável com MSW no navegador.
+- **No cliente:** o token fica em `kurio-session`. A consulta `['session']` confirma a sessão uma vez por carregamento e os guards (`beforeLoad`) a reaproveitam. Consultas privadas usam `['me', userId, ...]` e são descartadas ao sair ou trocar de conta. Qualquer `SESSION_EXPIRED`/`UNAUTHENTICATED` encerra a sessão local, avisa "Sua sessão expirou…" e leva para `/entrar?redirect=<destino>`. Entrar ou sair em uma aba vale para as outras (evento `storage`).
+- **Cenário `sessao-expirada`:** sessões criadas antes de o cenário ser ativado respondem `SESSION_EXPIRED`; um novo login funciona normalmente. O relógio do mock (`advanceClock`) também vence sessões pelo prazo de 30 min.
 
 ## 3. NFTs
 
