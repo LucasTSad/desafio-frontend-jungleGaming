@@ -1,5 +1,5 @@
 import { useRef, useState, type FormEvent } from 'react'
-import { Link, useLocation, useNavigate } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { cn } from 'cn'
 import { LogOut, Search, ShoppingCart, UserRound, X } from 'lucide-react'
 import type { NavSection } from '@/app/route-layout'
@@ -9,10 +9,15 @@ export type HeaderUser = {
   avatarUrl?: string
 }
 
+/** Recebe o foco após entrar pelo dialog, já que o botão Entrar deixa de existir. */
+export const ACCOUNT_LINK_ID = 'header-account-link'
+
 type SiteHeaderProps = {
   activeNav?: NavSection
   cartCount: number
   user: HeaderUser | null
+  /** Abre o acesso à conta; sem ele, o botão Entrar não aparece. */
+  onSignIn?: () => void
 }
 
 const NAV_ITEMS = [
@@ -22,7 +27,7 @@ const NAV_ITEMS = [
   { section: 'learn', label: 'Aprenda', to: '/aprenda' },
 ] as const
 
-export function SiteHeader({ activeNav, cartCount, user }: SiteHeaderProps) {
+export function SiteHeader({ activeNav, cartCount, user, onSignIn }: SiteHeaderProps) {
   return (
     <header className="hidden md:block">
       <div className="page-container">
@@ -81,7 +86,7 @@ export function SiteHeader({ activeNav, cartCount, user }: SiteHeaderProps) {
                 </span>
               )}
             </Link>
-            {user ? <AccountLink user={user} /> : <SignInLink />}
+            {user ? <AccountLink user={user} /> : onSignIn && <SignInButton onClick={onSignIn} />}
           </div>
         </div>
       </div>
@@ -89,23 +94,24 @@ export function SiteHeader({ activeNav, cartCount, user }: SiteHeaderProps) {
   )
 }
 
-function SignInLink() {
-  const location = useLocation()
+function SignInButton({ onClick }: { onClick: () => void }) {
   return (
-    <Link
-      to="/entrar"
-      search={{ redirect: location.href }}
+    <button
+      type="button"
+      onClick={onClick}
+      aria-haspopup="dialog"
       className="ml-5 flex h-[34px] items-center gap-1.5 rounded-sm bg-primary px-2.5 text-base font-medium text-primary-foreground transition-colors hover:bg-primary/85"
     >
       <LogOut className="size-5" strokeWidth={2} aria-hidden="true" />
       Entrar
-    </Link>
+    </button>
   )
 }
 
 function AccountLink({ user }: { user: HeaderUser }) {
   return (
     <Link
+      id={ACCOUNT_LINK_ID}
       to="/conta/perfil"
       className="ml-3 flex items-center gap-2 rounded-full py-1 pr-3 pl-1 text-sm transition-colors hover:bg-accent"
     >

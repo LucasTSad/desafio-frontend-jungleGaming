@@ -7,6 +7,8 @@ type MobileTabBarProps = {
   activeNav?: NavSection
   pathname: string
   cartCount: number
+  /** Sem sessão, a aba Perfil leva para a tela de entrar e retorna ao perfil depois. */
+  signedIn: boolean
 }
 
 type TabItem = {
@@ -42,14 +44,16 @@ const RIGHT_TABS: TabItem[] = [
   },
 ]
 
-export function MobileTabBar({ activeNav, pathname, cartCount }: MobileTabBarProps) {
+export function MobileTabBar({ activeNav, pathname, cartCount, signedIn }: MobileTabBarProps) {
   const renderTab = ({ label, to, Icon, isActive }: TabItem) => {
     const active = isActive(pathname, activeNav)
     const badge = to === '/carrinho' && cartCount > 0 ? cartCount : null
+    const needsSignIn = to === '/conta/perfil' && !signedIn
     return (
       <li key={to} className="flex justify-center">
         <Link
-          to={to}
+          to={needsSignIn ? '/entrar' : to}
+          search={needsSignIn ? { redirect: to } : undefined}
           aria-current={active ? 'page' : undefined}
           className={cn(
             'relative flex size-12 items-center justify-center rounded-full transition-colors',

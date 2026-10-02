@@ -1,4 +1,6 @@
 import { createRootRouteWithContext, Link, Outlet, useLocation } from '@tanstack/react-router'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { Devtools } from '@/app/devtools'
 import { useRouteLayout } from '@/app/route-layout'
 import type { RouterContext } from '@/app/router'
@@ -6,13 +8,15 @@ import { LiveRegion } from '@/components/layout/live-region'
 import { MobileTabBar } from '@/components/layout/mobile-tab-bar'
 import { MobileTopBar } from '@/components/layout/mobile-top-bar'
 import { SiteFooter } from '@/components/layout/site-footer'
-import { SiteHeader } from '@/components/layout/site-header'
+import { ACCOUNT_LINK_ID, SiteHeader } from '@/components/layout/site-header'
 import { MAIN_CONTENT_ID, SkipLink } from '@/components/layout/skip-link'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { usePreviewCart } from '@/dev/preview-cart'
-import { usePreviewUser } from '@/dev/preview-session'
+import { previewAuth, usePreviewUser } from '@/dev/preview-session'
+import { AuthDialog } from '@/features/auth/components/auth-dialog'
+import { welcomeMessage } from '@/features/auth/messages'
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   component: RootLayout,
@@ -24,11 +28,17 @@ function RootLayout() {
   const pathname = useLocation({ select: (location) => location.pathname })
   const { count: cartCount } = usePreviewCart()
   const user = usePreviewUser()
+  const [authOpen, setAuthOpen] = useState(false)
 
   return (
     <TooltipProvider>
       <SkipLink />
-      <SiteHeader activeNav={layout.nav} cartCount={cartCount} user={user} />
+      <SiteHeader
+        activeNav={layout.nav}
+        cartCount={cartCount}
+        user={user}
+        onSignIn={layout.hideSignIn ? undefined : () => setAuthOpen(true)}
+      />
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className="outline-none">
         <Outlet />
       </main>
@@ -36,12 +46,43 @@ function RootLayout() {
       {layout.mobileTabBar && (
         <>
           <div aria-hidden="true" className="h-28 md:hidden" />
-          <MobileTabBar activeNav={layout.nav} pathname={pathname} cartCount={cartCount} />
+          <MobileTabBar
+            activeNav={layout.nav}
+            pathname={pathname}
+            cartCount={cartCount}
+            signedIn={Boolean(user)}
+          />
         </>
       )}
       <Toaster
         position="bottom-right"
         mobileOffset={{ bottom: layout.mobileTabBar ? 112 : layout.mobileActionBar ? 168 : 16 }}
+      />
+      <AuthDialog
+        open={authOpen}
+        onOpenChange={setAuthOpen}
+        onSignIn={async (values) => {
+          const result = await previewAuth.signIn(values)
+          if (result.ok) {
+            setAuthOpen(false)
+            toast.success(welcomeMessage('sign-in', result.displayName))
+          }
+          return result
+        }}
+        onSignUp={async (values) => {
+          const result = await previewAuth.signUp(values)
+          if (result.ok) {
+            setAuthOpen(false)
+            toast.success(welcomeMessage('sign-up', result.displayName))
+          }
+          return result
+        }}
+        onCloseAutoFocus={(event) => {
+          const accountLink = document.getElementById(ACCOUNT_LINK_ID)
+          if (!accountLink) return
+          event.preventDefault()
+          accountLink.focus()
+        }}
       />
       <LiveRegion />
       <Devtools />
