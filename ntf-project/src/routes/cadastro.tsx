@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { previewAuth, usePreviewUser } from '@/dev/preview-session'
+import { useSignUp, useSessionUser } from '@/features/auth/api'
 import { AuthScreen } from '@/features/auth/components/auth-screen'
 import { SignUpForm } from '@/features/auth/components/sign-up-form'
 import { welcomeMessage } from '@/features/auth/messages'
@@ -16,7 +16,8 @@ export const Route = createFileRoute('/cadastro')({
 
 function SignUpPage() {
   const { redirect } = Route.useSearch()
-  const user = usePreviewUser()
+  const user = useSessionUser()
+  const signUp = useSignUp()
 
   useDocumentTitle('Criar conta')
   useRedirectWhenSignedIn(Boolean(user), redirect)
@@ -33,7 +34,7 @@ function SignUpPage() {
           </>
         }
         onSubmit={async (values) => {
-          const result = await previewAuth.signUp(values)
+          const result = await signUp(values)
           if (result.ok) toast.success(welcomeMessage('sign-up', result.displayName))
           return result
         }}

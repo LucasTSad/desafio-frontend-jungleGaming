@@ -1,11 +1,5 @@
-import {
-  createRootRouteWithContext,
-  Link,
-  Outlet,
-  useLocation,
-  useRouter,
-} from '@tanstack/react-router'
-import { useEffect, useRef, useState } from 'react'
+import { createRootRouteWithContext, Link, Outlet, useLocation } from '@tanstack/react-router'
+import { useState } from 'react'
 import { toast } from 'sonner'
 import { Devtools } from '@/app/devtools'
 import { useRouteLayout } from '@/app/route-layout'
@@ -21,7 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { usePreviewCart } from '@/dev/preview-cart'
-import { previewAuth, usePreviewUser } from '@/dev/preview-session'
+import { useSessionUser, useSignIn, useSignUp } from '@/features/auth/api'
 import { AuthDialog } from '@/features/auth/components/auth-dialog'
 import { welcomeMessage } from '@/features/auth/messages'
 import { useDocumentTitle } from '@/lib/use-document-title'
@@ -35,18 +29,12 @@ function RootLayout() {
   const layout = useRouteLayout()
   const pathname = useLocation({ select: (location) => location.pathname })
   const { count: cartCount } = usePreviewCart()
-  const user = usePreviewUser()
+  const user = useSessionUser()
+  const signIn = useSignIn()
+  const signUp = useSignUp()
   const [authOpen, setAuthOpen] = useState(false)
-  const router = useRouter()
   const signedIn = Boolean(user)
-  const wasSignedIn = useRef(signedIn)
   useRouteFocus(MAIN_CONTENT_ID)
-
-  // Quando a sessão termina, reavalia os guards para tirar o usuário das rotas privadas.
-  useEffect(() => {
-    if (wasSignedIn.current && !signedIn) void router.invalidate()
-    wasSignedIn.current = signedIn
-  }, [signedIn, router])
 
   return (
     <TooltipProvider>
@@ -54,7 +42,7 @@ function RootLayout() {
       <SiteHeader
         activeNav={layout.nav}
         cartCount={cartCount}
-        user={user}
+        user={user && { displayName: user.displayName, avatarUrl: user.avatarUrl ?? undefined }}
         onSignIn={layout.hideSignIn ? undefined : () => setAuthOpen(true)}
       />
       <main id={MAIN_CONTENT_ID} tabIndex={-1} className="outline-none">
@@ -80,7 +68,7 @@ function RootLayout() {
         open={authOpen}
         onOpenChange={setAuthOpen}
         onSignIn={async (values) => {
-          const result = await previewAuth.signIn(values)
+          const result = await signIn(values)
           if (result.ok) {
             setAuthOpen(false)
             toast.success(welcomeMessage('sign-in', result.displayName))
@@ -88,7 +76,7 @@ function RootLayout() {
           return result
         }}
         onSignUp={async (values) => {
-          const result = await previewAuth.signUp(values)
+          const result = await signUp(values)
           if (result.ok) {
             setAuthOpen(false)
             toast.success(welcomeMessage('sign-up', result.displayName))

@@ -4,6 +4,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { createQueryClient } from '@/app/query-client'
 import { createAppRouter } from '@/app/router'
+import { installSessionSync } from '@/app/session-sync'
 import './index.css'
 
 /** Com a API simulada ligada, o app só monta depois que o MSW já intercepta as requisições. */
@@ -15,6 +16,7 @@ async function enableMocking() {
 
 const queryClient = createQueryClient()
 const router = createAppRouter(queryClient)
+installSessionSync(queryClient, router)
 
 void enableMocking().then(() => {
   createRoot(document.getElementById('root')!).render(

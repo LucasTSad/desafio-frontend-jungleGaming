@@ -1,17 +1,22 @@
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { previewAccount, usePreviewAccount } from '@/dev/preview-account'
+import { profileQueryOptions, useSaveProfile } from '@/features/account/api'
 import { ProfileForm } from '@/features/account/components/profile-form'
+import { toAccountProfile } from '@/features/account/mappers'
 import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/conta/perfil')({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData(profileQueryOptions(context.user.id)),
   component: ProfilePage,
 })
 
 function ProfilePage() {
-  const account = usePreviewAccount()
+  const { user } = Route.useRouteContext()
+  const { data } = useSuspenseQuery(profileQueryOptions(user.id))
+  const saveProfile = useSaveProfile(user.id)
 
   useDocumentTitle('Perfil do colecionador')
 
-  if (!account) return null
-  return <ProfileForm profile={account.profile} onSave={previewAccount.saveProfile} />
+  return <ProfileForm key={user.id} profile={toAccountProfile(data)} onSave={saveProfile} />
 }

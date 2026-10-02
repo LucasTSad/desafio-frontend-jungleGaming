@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { previewAuth, usePreviewUser } from '@/dev/preview-session'
+import { useSignIn, useSessionUser } from '@/features/auth/api'
 import { AuthScreen } from '@/features/auth/components/auth-screen'
 import { SignInForm } from '@/features/auth/components/sign-in-form'
 import { welcomeMessage } from '@/features/auth/messages'
@@ -16,7 +16,8 @@ export const Route = createFileRoute('/entrar')({
 
 function SignInPage() {
   const { redirect } = Route.useSearch()
-  const user = usePreviewUser()
+  const user = useSessionUser()
+  const signIn = useSignIn()
 
   useDocumentTitle('Entrar')
   useRedirectWhenSignedIn(Boolean(user), redirect)
@@ -27,7 +28,7 @@ function SignInPage() {
     <AuthScreen mode="sign-in" redirect={redirect}>
       <SignInForm
         onSubmit={async (values) => {
-          const result = await previewAuth.signIn(values)
+          const result = await signIn(values)
           if (result.ok) toast.success(welcomeMessage('sign-in', result.displayName))
           return result
         }}
