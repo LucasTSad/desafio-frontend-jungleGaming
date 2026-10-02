@@ -28,52 +28,60 @@ export function SavedWalletPicker({ wallets, value, onChange }: SavedWalletPicke
           Carteira conectada
         </h2>
         <Link to="/conta/carteiras" className="text-base font-bold text-brand hover:underline">
-          Trocar carteira
+          {wallets.length > 0 ? 'Trocar carteira' : 'Cadastrar carteira'}
         </Link>
       </div>
-      <RadioGroup.Root
-        value={value ?? ''}
-        onValueChange={onChange}
-        aria-labelledby={headingId}
-        className="flex flex-col gap-[19px] md:gap-3"
-      >
-        {wallets.map((wallet) => {
-          const itemId = `${headingId}-${wallet.id}`
-          const network = CHECKOUT_NETWORKS.find((item) => item.value === wallet.network)
-          return (
-            <div
-              key={wallet.id}
-              className="relative flex items-center gap-[18px] rounded-2xl bg-surface py-[18px] pr-3 pl-[18px] has-[[data-state=checked]]:ring-1 has-[[data-state=checked]]:ring-primary/50 md:rounded-md md:py-3"
-            >
-              <RadioGroup.Item
-                id={itemId}
-                value={wallet.id}
-                aria-describedby={`${itemId}-details`}
-                className={cn(RADIO_CLASSES, 'after:absolute after:inset-0 after:rounded-2xl')}
+      {wallets.length === 0 ? (
+        <p className="flex items-start gap-3 rounded-md bg-surface p-4 text-[13px] leading-5 text-muted-foreground">
+          <Wallet className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden="true" />
+          Você ainda não tem carteiras cadastradas. Informe o endereço que vai receber os NFTs nos
+          dados do colecionador.
+        </p>
+      ) : (
+        <RadioGroup.Root
+          value={value ?? ''}
+          onValueChange={onChange}
+          aria-labelledby={headingId}
+          className="flex flex-col gap-[19px] md:gap-3"
+        >
+          {wallets.map((wallet) => {
+            const itemId = `${headingId}-${wallet.id}`
+            const network = CHECKOUT_NETWORKS.find((item) => item.value === wallet.network)
+            return (
+              <div
+                key={wallet.id}
+                className="relative flex items-center gap-[18px] rounded-2xl bg-surface py-[18px] pr-3 pl-[18px] has-[[data-state=checked]]:ring-1 has-[[data-state=checked]]:ring-primary/50 md:rounded-md md:py-3"
               >
-                <RadioGroup.Indicator className={RADIO_DOT_CLASSES} />
-              </RadioGroup.Item>
-              <label htmlFor={itemId} className="flex min-w-0 flex-1 flex-col gap-1">
-                <span className="text-[15px] font-bold">{wallet.label}</span>
-                <span
-                  id={`${itemId}-details`}
-                  className="flex flex-col gap-1 text-[13px] text-muted-foreground"
+                <RadioGroup.Item
+                  id={itemId}
+                  value={wallet.id}
+                  aria-describedby={`${itemId}-details`}
+                  className={cn(RADIO_CLASSES, 'after:absolute after:inset-0 after:rounded-2xl')}
                 >
-                  <span className="truncate">{wallet.displayAddress}</span>
-                  <span>{network?.longLabel}</span>
-                </span>
-              </label>
-              <Link
-                to="/conta/carteiras"
-                className="relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full text-subtle-foreground transition-colors hover:bg-accent hover:text-brand"
-              >
-                <EllipsisVertical className="size-5" aria-hidden="true" />
-                <span className="sr-only">Gerenciar carteira {wallet.label}</span>
-              </Link>
-            </div>
-          )
-        })}
-      </RadioGroup.Root>
+                  <RadioGroup.Indicator className={RADIO_DOT_CLASSES} />
+                </RadioGroup.Item>
+                <label htmlFor={itemId} className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="text-[15px] font-bold">{wallet.label}</span>
+                  <span
+                    id={`${itemId}-details`}
+                    className="flex flex-col gap-1 text-[13px] text-muted-foreground"
+                  >
+                    <span className="truncate">{wallet.displayAddress}</span>
+                    <span>{network?.longLabel}</span>
+                  </span>
+                </label>
+                <Link
+                  to="/conta/carteiras"
+                  className="relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full text-subtle-foreground transition-colors hover:bg-accent hover:text-brand"
+                >
+                  <EllipsisVertical className="size-5" aria-hidden="true" />
+                  <span className="sr-only">Gerenciar carteira {wallet.label}</span>
+                </Link>
+              </div>
+            )
+          })}
+        </RadioGroup.Root>
+      )}
     </section>
   )
 }

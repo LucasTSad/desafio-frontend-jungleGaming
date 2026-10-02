@@ -4,30 +4,25 @@ import { Controller, useWatch, type UseFormReturn } from 'react-hook-form'
 import { cn } from 'cn'
 import { FormField } from '@/components/common/form-field'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { NOTE_MAX_LENGTH, type CheckoutInput, type CheckoutValues } from '../schemas'
-import { CHECKOUT_NETWORKS, WALLET_PROVIDERS, type SavedWallet } from '../types'
+import type { SavedWallet } from '../types'
 import { CHECKOUT_LABEL_CLASSES, RADIO_CLASSES, RADIO_DOT_CLASSES } from './checkout-styles'
+import { EnsNameInput, NetworkSelect, WalletTypeSelect } from './wallet-field-controls'
 
 type CollectorFieldsProps = {
   form: UseFormReturn<CheckoutInput, unknown, CheckoutValues>
   /** Carteira cadastrada em uso; os campos de carteira ficam travados com os dados dela. */
   savedWallet?: SavedWallet
+  /** Sem carteiras cadastradas, a opção "Usar outra carteira?" não faz sentido e some. */
+  hasSavedWallets: boolean
   onUseOtherWalletChange: (useOther: boolean) => void
 }
-
-const SELECT_TRIGGER_CLASSES = 'h-10 w-full rounded-sm px-3 data-placeholder:text-subtle-foreground'
 
 export function CollectorFields({
   form,
   savedWallet,
+  hasSavedWallets,
   onUseOtherWalletChange,
 }: CollectorFieldsProps) {
   const otherWalletId = useId()
@@ -81,18 +76,13 @@ export function CollectorFields({
             control={control}
             name="network"
             render={({ field: { value, onChange, ref } }) => (
-              <Select value={value ?? ''} onValueChange={onChange} disabled={locked}>
-                <SelectTrigger {...field} ref={ref} className={SELECT_TRIGGER_CLASSES}>
-                  <SelectValue placeholder="Selecione uma rede" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  {CHECKOUT_NETWORKS.map((network) => (
-                    <SelectItem key={network.value} value={network.value}>
-                      {network.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <NetworkSelect
+                {...field}
+                ref={ref}
+                value={value}
+                onChange={onChange}
+                disabled={locked}
+              />
             )}
           />
         )}
@@ -153,18 +143,13 @@ export function CollectorFields({
             control={control}
             name="walletType"
             render={({ field: { value, onChange, ref } }) => (
-              <Select value={value ?? ''} onValueChange={onChange} disabled={locked}>
-                <SelectTrigger {...field} ref={ref} className={SELECT_TRIGGER_CLASSES}>
-                  <SelectValue placeholder="Selecione uma carteira" />
-                </SelectTrigger>
-                <SelectContent position="popper">
-                  {WALLET_PROVIDERS.map((provider) => (
-                    <SelectItem key={provider.value} value={provider.value}>
-                      {provider.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <WalletTypeSelect
+                {...field}
+                ref={ref}
+                value={value}
+                onChange={onChange}
+                disabled={locked}
+              />
             )}
           />
         )}
@@ -209,45 +194,31 @@ export function CollectorFields({
         labelClassName={CHECKOUT_LABEL_CLASSES}
         error={errors.ensName?.message}
       >
-        {(field) => (
-          <div className="flex">
-            <Input
-              {...field}
-              {...register('ensName')}
-              autoCapitalize="none"
-              spellCheck={false}
-              className="rounded-r-none"
-            />
-            <span
-              aria-hidden="true"
-              className="flex h-10 items-center rounded-r-sm border border-l-0 border-input px-3 text-base"
-            >
-              .eth
-            </span>
-          </div>
-        )}
+        {(field) => <EnsNameInput {...field} {...register('ensName')} />}
       </FormField>
 
-      <div className="flex items-center gap-2 md:col-span-2">
-        <Controller
-          control={control}
-          name="walletSource"
-          render={({ field: { value, ref } }) => (
-            <Checkbox.Root
-              ref={ref}
-              id={otherWalletId}
-              checked={value === 'other'}
-              onCheckedChange={(checked) => onUseOtherWalletChange(checked === true)}
-              className={RADIO_CLASSES}
-            >
-              <Checkbox.Indicator className={RADIO_DOT_CLASSES} />
-            </Checkbox.Root>
-          )}
-        />
-        <label htmlFor={otherWalletId} className="text-[15px]">
-          Usar outra carteira?
-        </label>
-      </div>
+      {hasSavedWallets && (
+        <div className="flex items-center gap-2 md:col-span-2">
+          <Controller
+            control={control}
+            name="walletSource"
+            render={({ field: { value, ref } }) => (
+              <Checkbox.Root
+                ref={ref}
+                id={otherWalletId}
+                checked={value === 'other'}
+                onCheckedChange={(checked) => onUseOtherWalletChange(checked === true)}
+                className={RADIO_CLASSES}
+              >
+                <Checkbox.Indicator className={RADIO_DOT_CLASSES} />
+              </Checkbox.Root>
+            )}
+          />
+          <label htmlFor={otherWalletId} className="text-[15px]">
+            Usar outra carteira?
+          </label>
+        </div>
+      )}
 
       <FormField
         label="Observação do colecionador (opcional)"

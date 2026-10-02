@@ -181,6 +181,7 @@ function CheckoutContent({
     <CollectorFields
       form={form}
       savedWallet={lockedWallet}
+      hasSavedWallets={savedWallets.length > 0}
       onUseOtherWalletChange={changeWalletSource}
     />
   )
