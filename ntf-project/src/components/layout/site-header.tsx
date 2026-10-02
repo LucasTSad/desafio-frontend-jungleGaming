@@ -113,7 +113,7 @@ function AccountLink({ user }: { user: HeaderUser }) {
     <Link
       id={ACCOUNT_LINK_ID}
       to="/conta/perfil"
-      className="ml-3 flex items-center gap-2 rounded-full py-1 pr-3 pl-1 text-sm transition-colors hover:bg-accent"
+      className="ml-3 flex items-center gap-2 rounded-full py-1 pr-3 pl-1 text-sm transition-colors hover:bg-accent max-lg:pr-1"
     >
       <span className="flex size-8 items-center justify-center overflow-hidden rounded-full bg-surface text-brand">
         {user.avatarUrl ? (
@@ -122,7 +122,7 @@ function AccountLink({ user }: { user: HeaderUser }) {
           <UserRound className="size-4" aria-hidden="true" />
         )}
       </span>
-      <span className="max-w-32 truncate">{user.displayName}</span>
+      <span className="max-w-32 truncate max-lg:sr-only">{user.displayName}</span>
       <span className="sr-only">— minha conta</span>
     </Link>
   )

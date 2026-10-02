@@ -23,7 +23,7 @@ function AccountLayout() {
 
   return (
     <>
-      <MobileTopBar title="Minha conta" />
+      <MobileTopBar title="Minha conta" titleAs="p" />
       <div className="page-container grid gap-6 pt-2 pb-12 md:grid-cols-[220px_minmax(0,1fr)] md:gap-[30px] md:pt-[30px] lg:grid-cols-[310px_minmax(0,1fr)]">
         <AccountNav onSignOut={() => void signOut()} />
         <div className="min-w-0">

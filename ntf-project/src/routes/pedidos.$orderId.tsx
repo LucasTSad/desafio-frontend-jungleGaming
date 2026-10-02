@@ -43,7 +43,7 @@ function OrderPage() {
   if (!order) {
     return (
       <>
-        <MobileTopBar title="Pedido" fallbackTo="/" />
+        <MobileTopBar title="Pedido" titleAs="p" fallbackTo="/" />
         <div className="page-container py-10 md:py-16">
           <StatusMessage
             titleAs="h1"

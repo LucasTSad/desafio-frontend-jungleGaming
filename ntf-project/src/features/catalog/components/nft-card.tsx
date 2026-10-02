@@ -13,9 +13,17 @@ type NftCardProps = {
   isFavorite: boolean
   onToggleFavorite: (nft: NftSummary) => void
   priority?: boolean
+  /** Nível do título conforme a página (h2 quando a lista fica direto abaixo do h1). */
+  titleAs?: 'h2' | 'h3'
 }
 
-export function NftCard({ nft, isFavorite, onToggleFavorite, priority }: NftCardProps) {
+export function NftCard({
+  nft,
+  isFavorite,
+  onToggleFavorite,
+  priority,
+  titleAs: Title = 'h3',
+}: NftCardProps) {
   return (
     <article className="group relative flex flex-col gap-3">
       <div className="relative rounded-2xl bg-surface p-1 pb-6 md:rounded-none md:px-1 md:py-[25px]">
@@ -46,7 +54,7 @@ export function NftCard({ nft, isFavorite, onToggleFavorite, priority }: NftCard
         </button>
       </div>
       <div className="flex flex-col gap-1 px-2 md:px-0">
-        <h3 className="text-[15px] leading-5 md:text-base">
+        <Title className="text-[15px] leading-5 md:text-base">
           <Link
             to="/nft/$nftId"
             params={{ nftId: nft.id }}
@@ -54,7 +62,7 @@ export function NftCard({ nft, isFavorite, onToggleFavorite, priority }: NftCard
           >
             {nft.name}
           </Link>
-        </h3>
+        </Title>
         <p className="flex flex-wrap items-baseline gap-x-3 text-[15px] md:text-[17px]">
           <span className="font-bold text-brand">
             <span className="sr-only">Preço: </span>

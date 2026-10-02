@@ -105,7 +105,14 @@ function CartContent({
 
   return (
     <div className="mt-2 grid gap-8 md:mt-4 lg:grid-cols-[minmax(0,782px)_minmax(0,332px)] lg:justify-between lg:gap-12">
-      <section aria-label="Itens do carrinho" aria-busy={loading} className="flex flex-col gap-4">
+      <section
+        aria-labelledby="cart-items-heading"
+        aria-busy={loading}
+        className="flex flex-col gap-4"
+      >
+        <h2 id="cart-items-heading" className="sr-only">
+          Itens do carrinho
+        </h2>
         <div
           aria-hidden="true"
           className={`hidden border-b border-border pb-3 text-[15px] font-semibold ${CART_COLUMNS}`}

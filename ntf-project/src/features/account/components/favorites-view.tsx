@@ -100,6 +100,7 @@ function FavoritesContent({
             nft={nft}
             isFavorite={favoriteIds.has(nft.id)}
             onToggleFavorite={onToggleFavorite}
+            titleAs="h2"
           />
         </li>
       ))}

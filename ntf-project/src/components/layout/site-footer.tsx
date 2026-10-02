@@ -158,9 +158,14 @@ export function SiteFooter({ className }: { className?: string }) {
               ))}
             </ul>
             <h2 className="mt-7 text-lg leading-7 font-semibold">Carteiras compatíveis</h2>
-            <p className="mt-3 w-fit rounded-sm border border-border bg-surface-strong px-2.5 py-1.5 text-[9px] font-bold tracking-wide text-brand">
-              METAMASK&nbsp;&nbsp;•&nbsp;&nbsp;WALLETCONNECT&nbsp;&nbsp;•&nbsp;&nbsp;COINBASE
-            </p>
+            <ul className="mt-3 flex w-fit max-w-full flex-wrap gap-x-2 gap-y-1 rounded-sm border border-border bg-surface-strong px-2.5 py-1.5 text-[11px] font-bold tracking-wide text-brand lg:text-[9px] xl:flex-nowrap">
+              {['MetaMask', 'WalletConnect', 'Coinbase'].map((wallet, index) => (
+                <li key={wallet} className="flex gap-2 uppercase">
+                  {index > 0 && <span aria-hidden="true">•</span>}
+                  {wallet}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
@@ -234,7 +239,7 @@ function NewsletterForm() {
           placeholder="digite seu e-mail..."
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? errorId : undefined}
-          className="h-10 min-w-0 flex-1 rounded-l-sm border border-r-0 border-transparent bg-surface-strong px-3 text-[15px] outline-none placeholder:text-subtle-foreground focus-visible:border-primary aria-invalid:border-destructive"
+          className="h-10 min-w-0 flex-1 rounded-l-sm border border-r-0 border-transparent bg-surface-strong px-3 text-[15px] placeholder:text-subtle-foreground focus-visible:border-primary aria-invalid:border-destructive"
         />
         <button
           type="submit"

@@ -38,7 +38,7 @@ export function CheckoutItems({
               className={cn('shrink-0 rounded-sm', compact ? 'size-12' : 'size-[70px]')}
             />
             <div className="min-w-0 flex-1">
-              <p className={cn('text-[15px] font-bold', !compact && 'truncate')}>{line.name}</p>
+              <p className="text-[15px] font-bold break-words">{line.name}</p>
               <p className="text-[13px] text-subtle-foreground">
                 ID do token: {line.tokenId}
                 <span className="sr-only">, edição {line.edition.label}</span>

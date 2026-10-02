@@ -154,7 +154,7 @@ function CouponForm({ coupon, onApply, onRemove }: CouponFormProps) {
           aria-invalid={Boolean(error)}
           aria-describedby={error ? errorId : undefined}
           className={cn(
-            'h-[50px] min-w-0 flex-1 rounded-l-full border border-r-0 border-input bg-transparent pl-6 text-[13px] outline-none placeholder:text-subtle-foreground focus-visible:border-primary md:h-10 md:rounded-l-sm md:border-primary md:pl-2',
+            'h-[50px] min-w-0 flex-1 rounded-l-full border border-r-0 border-input bg-transparent pl-6 text-[13px] placeholder:text-subtle-foreground focus-visible:border-primary md:h-10 md:rounded-l-sm md:border-primary md:pl-2',
             error && 'border-destructive md:border-destructive',
           )}
         />

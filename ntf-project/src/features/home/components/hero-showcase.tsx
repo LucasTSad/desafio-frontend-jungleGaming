@@ -114,15 +114,15 @@ function MobileHero({ slides }: HeroShowcaseProps) {
           >
             Seja dono da cultura digital
           </h1>
-          <p className="mt-2 text-[11px] leading-[17px] tracking-wide text-muted-foreground">
+          <p className="mt-2 text-[11px] leading-[17px] tracking-wide">
             Descubra NFTs selecionados de criadores do mundo todo.
           </p>
           <a
             href="#mercado"
-            className="mt-1.5 flex w-fit items-center gap-2 py-1 text-xs font-bold tracking-wide text-brand uppercase"
+            className="mt-1.5 flex w-fit items-center gap-2 py-1 text-xs font-bold tracking-wide uppercase"
           >
             Explorar
-            <ArrowRight className="size-4" aria-hidden="true" />
+            <ArrowRight className="size-4 text-brand" aria-hidden="true" />
           </a>
         </div>
 

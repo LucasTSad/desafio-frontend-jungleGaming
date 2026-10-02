@@ -72,7 +72,7 @@ export function OrderView({ order, onViewExplorer }: OrderViewProps) {
                       src={line.artwork.src}
                       alt=""
                       sizes="70px"
-                      className="size-14 shrink-0 rounded-md sm:size-[70px]"
+                      className="size-14 shrink-0 rounded-md max-[359px]:hidden sm:size-[70px]"
                     />
                     <div className="min-w-0">
                       <p className="text-sm font-bold sm:text-[15px]">{line.name}</p>
