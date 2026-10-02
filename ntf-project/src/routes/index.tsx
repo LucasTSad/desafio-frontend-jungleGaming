@@ -1,14 +1,11 @@
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { SlidersHorizontal } from 'lucide-react'
-import { useMemo } from 'react'
 import {
-  previewCatalogFacets,
-  previewCatalogPage,
-  previewDataStatus,
-  previewFeaturedNft,
-  previewHeroSlides,
-} from '@/dev/preview-data'
-import { togglePreviewFavorite, usePreviewFavorites } from '@/dev/preview-favorites'
+  catalogQueryOptions,
+  highlightsQueryOptions,
+  toCatalogStatus,
+} from '@/features/catalog/api'
 import { CatalogFilters } from '@/features/catalog/components/catalog-filters'
 import { CatalogSearchForm } from '@/features/catalog/components/catalog-search-form'
 import { CatalogSection } from '@/features/catalog/components/catalog-section'
@@ -20,6 +17,7 @@ import {
   useCatalogSearch,
   useUpdateCatalogSearch,
 } from '@/features/catalog/use-catalog-search'
+import { useFavoriteIds, useToggleFavorite } from '@/features/favorites/api'
 import { HeroShowcase } from '@/features/home/components/hero-showcase'
 import { MintJournal } from '@/features/home/components/mint-journal'
 import { PromoBanners } from '@/features/home/components/promo-banners'
@@ -28,15 +26,26 @@ import { useDocumentTitle } from '@/lib/use-document-title'
 export const Route = createFileRoute('/')({
   validateSearch: catalogSearchSchema,
   staticData: { nav: 'home', mobileTabBar: true },
+  loaderDeps: ({ search }) => search,
+  // Só aquece o cache (inclusive no preload ao passar o mouse); a tela mostra os próprios skeletons.
+  loader: ({ context: { queryClient }, deps }) => {
+    void queryClient.prefetchQuery(highlightsQueryOptions())
+    void queryClient.prefetchQuery(catalogQueryOptions(deps))
+  },
   component: HomePage,
 })
+
+const EMPTY_PAGE = { items: [], page: 1, pageCount: 1, total: 0, facets: undefined }
 
 function HomePage() {
   useDocumentTitle()
   const search = useCatalogSearch()
   const updateSearch = useUpdateCatalogSearch()
-  const catalog = useMemo(() => previewCatalogPage(search), [search])
-  const favoriteIds = usePreviewFavorites()
+  const catalogQuery = useQuery(catalogQueryOptions(search))
+  const highlights = useQuery(highlightsQueryOptions()).data
+  const favoriteIds = useFavoriteIds()
+  const toggleFavorite = useToggleFavorite()
+  const catalog = catalogQuery.data ?? EMPTY_PAGE
 
   const clearFilters = () =>
     updateSearch({
@@ -47,9 +56,7 @@ function HomePage() {
       priceMax: undefined,
     })
 
-  const filters = (
-    <CatalogFilters facets={previewCatalogFacets} search={search} onChange={updateSearch} />
-  )
+  const filters = <CatalogFilters facets={catalog.facets} search={search} onChange={updateSearch} />
   const activeFilters = countActiveFilters(search)
 
   return (
@@ -93,20 +100,20 @@ function HomePage() {
         </FiltersSheet>
       </div>
 
-      <HeroShowcase slides={previewHeroSlides} />
+      <HeroShowcase slides={highlights?.hero ?? []} />
 
       <CatalogSection
         search={search}
         catalog={catalog}
-        facets={previewCatalogFacets}
-        featured={previewFeaturedNft}
-        status={previewDataStatus}
+        facets={catalog.facets}
+        featured={highlights?.featured}
+        status={toCatalogStatus(catalogQuery)}
         favoriteIds={favoriteIds}
         filters={filters}
-        onToggleFavorite={togglePreviewFavorite}
+        onToggleFavorite={toggleFavorite}
         onChange={updateSearch}
         onClearFilters={clearFilters}
-        onRetry={() => window.location.reload()}
+        onRetry={() => void catalogQuery.refetch()}
       />
 
       <PromoBanners />

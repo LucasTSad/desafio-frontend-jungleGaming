@@ -10,8 +10,9 @@ export type NftSummary = {
   id: string
   name: string
   artwork: NftArtwork
-  priceEth: number
-  previousPriceEth?: number
+  /** Valor em ETH como string decimal ("1.19"), igual ao da API. */
+  priceEth: string
+  previousPriceEth?: string
   collection: CollectionSlug
   network: NetworkSlug
   isRare?: boolean
@@ -29,6 +30,7 @@ export type FacetCount<T extends string> = { value: T; count: number }
 export type CatalogFacets = {
   collections: FacetCount<CollectionSlug>[]
   networks: FacetCount<NetworkSlug>[]
+  /** Faixa em número só para o controle deslizante; o filtro volta à API como string ETH. */
   priceRange: { min: number; max: number }
 }
 

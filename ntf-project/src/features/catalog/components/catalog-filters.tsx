@@ -2,6 +2,7 @@ import { Check } from 'lucide-react'
 import { type ReactNode, useId, useState } from 'react'
 import { cn } from 'cn'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Slider } from '@/components/ui/slider'
 import { formatEthRange } from '../format'
 import {
@@ -17,7 +18,8 @@ import type { CatalogFacets } from '../types'
 type PriceRange = { min?: number; max?: number }
 
 type CatalogFiltersProps = {
-  facets: CatalogFacets
+  /** Ausente até a primeira resposta da API: contagens ficam ocultas e a faixa de preço espera. */
+  facets?: CatalogFacets
   search: CatalogSearch
   onChange: (patch: Partial<CatalogSearch>) => void
   className?: string
@@ -27,8 +29,8 @@ const toggle = <T extends string>(list: T[], value: T) =>
   (list.includes(value) ? list.filter((item) => item !== value) : [...list, value]).join(',') ||
   undefined
 
-const countOf = <T extends string>(list: { value: T; count: number }[], value: T) =>
-  list.find((item) => item.value === value)?.count ?? 0
+const countOf = <T extends string>(list: { value: T; count: number }[] | undefined, value: T) =>
+  list ? (list.find((item) => item.value === value)?.count ?? 0) : undefined
 
 export function CatalogFilters({ facets, search, onChange, className }: CatalogFiltersProps) {
   const collections = parseList<CollectionSlug>(search.collections)
@@ -41,7 +43,7 @@ export function CatalogFilters({ facets, search, onChange, className }: CatalogF
           <FilterOption
             key={slug}
             label={label}
-            count={countOf(facets.collections, slug)}
+            count={countOf(facets?.collections, slug)}
             selected={collections.includes(slug)}
             onToggle={() => onChange({ collections: toggle(collections, slug) })}
             emphasizeCount
@@ -49,19 +51,23 @@ export function CatalogFilters({ facets, search, onChange, className }: CatalogF
         ))}
       </FilterGroup>
 
-      <PriceRangeFilter
-        key={`${search.priceMin ?? ''}-${search.priceMax ?? ''}`}
-        bounds={facets.priceRange}
-        value={{ min: search.priceMin, max: search.priceMax }}
-        onApply={({ min, max }) => onChange({ priceMin: min, priceMax: max })}
-      />
+      {facets ? (
+        <PriceRangeFilter
+          key={`${search.priceMin ?? ''}-${search.priceMax ?? ''}`}
+          bounds={facets.priceRange}
+          value={{ min: search.priceMin, max: search.priceMax }}
+          onApply={({ min, max }) => onChange({ priceMin: min, priceMax: max })}
+        />
+      ) : (
+        <Skeleton className="h-[136px]" />
+      )}
 
       <FilterGroup title="Rede">
         {CATALOG_NETWORKS.map(({ slug, label }) => (
           <FilterOption
             key={slug}
             label={label}
-            count={countOf(facets.networks, slug)}
+            count={countOf(facets?.networks, slug)}
             selected={networks.includes(slug)}
             onToggle={() => onChange({ networks: toggle(networks, slug) })}
           />
@@ -86,7 +92,7 @@ function FilterGroup({ title, children }: { title: string; children: ReactNode }
 
 type FilterOptionProps = {
   label: string
-  count: number
+  count?: number
   selected: boolean
   onToggle: () => void
   emphasizeCount?: boolean
@@ -111,14 +117,16 @@ function FilterOption({ label, count, selected, onToggle, emphasizeCount }: Filt
           />
         )}
         <span>{label}</span>
-        <span
-          className={cn(
-            emphasizeCount && 'font-bold',
-            emphasizeCount && !selected && 'text-foreground',
-          )}
-        >
-          <span className="sr-only">, </span>({count})<span className="sr-only"> NFTs</span>
-        </span>
+        {count !== undefined && (
+          <span
+            className={cn(
+              emphasizeCount && 'font-bold',
+              emphasizeCount && !selected && 'text-foreground',
+            )}
+          >
+            <span className="sr-only">, </span>({count})<span className="sr-only"> NFTs</span>
+          </span>
+        )}
       </button>
     </li>
   )

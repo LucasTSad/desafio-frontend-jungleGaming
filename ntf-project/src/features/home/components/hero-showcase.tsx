@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { cn } from 'cn'
 import { NftImage } from '@/components/common/nft-image'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel'
 import type { NftSummary } from '@/features/catalog/types'
 import { useMediaQuery } from '@/lib/use-media-query'
@@ -173,6 +174,11 @@ function HeroCarousel({
   className,
   slideClassName,
 }: HeroCarouselProps) {
+  // Enquanto os destaques carregam, o espaço da arte fica reservado para não deslocar a página.
+  if (slides.length === 0) {
+    return <Skeleton className={cn('aspect-square', className, slideClassName)} />
+  }
+
   return (
     <Carousel
       setApi={setApi}

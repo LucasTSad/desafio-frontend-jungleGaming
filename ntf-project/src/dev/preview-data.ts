@@ -1,25 +1,11 @@
-// Dados de exemplo temporários para validar as telas contra o Figma.
-// Este arquivo será removido quando a API (MSW) for integrada.
+// Dados de exemplo temporários usados só pelo carrinho de exemplo.
+// Este arquivo será removido quando o carrinho for integrado à API (MSW).
 
-import {
-  CATALOG_COLLECTIONS,
-  CATALOG_NETWORKS,
-  CATALOG_PAGE_SIZE,
-  type CatalogSearch,
-  type CollectionSlug,
-  type NetworkSlug,
-  parseList,
-} from '@/features/catalog/search-params'
-import type {
-  CatalogFacets,
-  CatalogPage,
-  CatalogStatus,
-  NftArtwork,
-  NftSummary,
-} from '@/features/catalog/types'
-import type { EditionId, NftDetail, NftGalleryImage, NftReview } from '@/features/nft/types'
+import type { CollectionSlug, NetworkSlug } from '@/features/catalog/search-params'
+import type { CatalogStatus, NftArtwork } from '@/features/catalog/types'
+import type { EditionId, NftEdition } from '@/features/nft/types'
 
-/** Troque para 'loading' ou 'error' para revisar os demais estados de catálogo, detalhe e carrinho. */
+/** Troque para 'loading' ou 'error' para revisar os demais estados do carrinho e do pagamento. */
 export const previewDataStatus: CatalogStatus = 'success'
 
 const ARTWORKS = {
@@ -41,7 +27,14 @@ const ARTWORKS = {
   },
 } satisfies Record<string, NftArtwork>
 
-type PreviewNft = NftSummary & { isNew: boolean; isTrending: boolean; listedAt: string }
+type PreviewNft = {
+  id: string
+  name: string
+  artwork: NftArtwork
+  priceEth: number
+  collection: CollectionSlug
+  network: NetworkSlug
+}
 
 type Row = [
   name: string,
@@ -92,105 +85,19 @@ const ROWS: Row[] = [
   ['Cedar Laureate #105', 'emerald', 'arte-3d', 'solana', 8.4, 'rare', 9.1],
 ]
 
-const PREVIEW_NFTS: PreviewNft[] = ROWS.map(
-  ([name, art, collection, network, priceEth, flags = '', previousPriceEth], index) => ({
-    id: name
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '')
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, ''),
-    name,
-    artwork: ARTWORKS[art],
-    priceEth,
-    previousPriceEth,
-    collection,
-    network,
-    isRare: flags.includes('rare'),
-    isNew: flags.includes('new'),
-    isTrending: flags.includes('hot'),
-    listedAt: new Date(Date.UTC(2026, 8, 30 - index)).toISOString(),
-  }),
-)
-
-function toSummary({ isNew: _n, isTrending: _t, listedAt: _l, ...nft }: PreviewNft): NftSummary {
-  return nft
-}
-
-function findNft(name: string) {
-  const nft = PREVIEW_NFTS.find((item) => item.name === name)
-  if (!nft) throw new Error(`NFT de exemplo não encontrado: ${name}`)
-  return toSummary(nft)
-}
-
-export const previewHeroSlides: NftSummary[] = [
-  findNft('Emerald Ape #042'),
-  findNft('Ivory Baron #088'),
-  findNft('Golden Beat #207'),
-]
-
-export const previewFeaturedNft: NftSummary = findNft('Sage Nomad #009')
-
-export const previewCatalogFacets: CatalogFacets = {
-  collections: CATALOG_COLLECTIONS.map(({ slug }) => ({
-    value: slug,
-    count: PREVIEW_NFTS.filter((nft) => nft.collection === slug).length,
-  })),
-  networks: CATALOG_NETWORKS.map(({ slug }) => ({
-    value: slug,
-    count: PREVIEW_NFTS.filter((nft) => nft.network === slug).length,
-  })),
-  priceRange: {
-    min: Math.min(...PREVIEW_NFTS.map((nft) => nft.priceEth)),
-    max: Math.max(...PREVIEW_NFTS.map((nft) => nft.priceEth)),
-  },
-}
-
-const normalize = (value: string) => value.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-
-const nameCollator = new Intl.Collator('pt-BR')
-
-/** Reproduz no cliente o que a API fará: filtrar, ordenar e paginar o catálogo. */
-export function previewCatalogPage(search: CatalogSearch): CatalogPage {
-  const collections = parseList<CollectionSlug>(search.collections)
-  const networks = parseList<NetworkSlug>(search.networks)
-  const query = search.q ? normalize(search.q) : ''
-
-  const filtered = PREVIEW_NFTS.filter((nft) => {
-    if (query && !normalize(nft.name).includes(query)) return false
-    if (collections.length > 0 && !collections.includes(nft.collection)) return false
-    if (networks.length > 0 && !networks.includes(nft.network)) return false
-    if (search.priceMin !== undefined && nft.priceEth < search.priceMin) return false
-    if (search.priceMax !== undefined && nft.priceEth > search.priceMax) return false
-    if (search.tab === 'novos' && !nft.isNew) return false
-    if (search.tab === 'em-alta' && !nft.isTrending) return false
-    return true
-  })
-
-  const sorted = [...filtered].sort((a, b) => {
-    switch (search.sort) {
-      case 'menor-preco':
-        return a.priceEth - b.priceEth
-      case 'maior-preco':
-        return b.priceEth - a.priceEth
-      case 'nome':
-        return nameCollator.compare(a.name, b.name)
-      default:
-        return b.listedAt.localeCompare(a.listedAt)
-    }
-  })
-
-  const pageCount = Math.max(1, Math.ceil(sorted.length / CATALOG_PAGE_SIZE))
-  const page = Math.min(search.page ?? 1, pageCount)
-  const start = (page - 1) * CATALOG_PAGE_SIZE
-
-  return {
-    items: sorted.slice(start, start + CATALOG_PAGE_SIZE).map(toSummary),
-    page,
-    pageCount,
-    total: sorted.length,
-  }
-}
+const PREVIEW_NFTS: PreviewNft[] = ROWS.map(([name, art, collection, network, priceEth]) => ({
+  id: name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, ''),
+  name,
+  artwork: ARTWORKS[art],
+  priceEth,
+  collection,
+  network,
+}))
 
 const EDITION_LABELS: Record<EditionId, string> = {
   '1-1': '1/1',
@@ -199,118 +106,21 @@ const EDITION_LABELS: Record<EditionId, string> = {
   aberta: 'ABERTA',
 }
 
-const GALLERY_FOCUS: { label: string; focus?: NftGalleryImage['focus'] }[] = [
-  { label: 'arte completa' },
-  { label: 'detalhe do rosto', focus: { scale: 1.9, x: 50, y: 32 } },
-  { label: 'detalhe da roupa', focus: { scale: 2.1, x: 50, y: 88 } },
-  { label: 'detalhe do fundo', focus: { scale: 1.6, x: 12, y: 18 } },
-]
+export type PreviewCartNft = PreviewNft & { tokenId: string; editions: NftEdition[] }
 
-const REVIEWS: NftReview[] = [
-  {
-    id: 'r1',
-    author: 'Marina Costa',
-    rating: 5,
-    date: '2026-09-21',
-    comment:
-      'Arte impecável e entrega imediata na carteira. A procedência verificada me deu segurança.',
-  },
-  {
-    id: 'r2',
-    author: 'Diego Alves',
-    rating: 5,
-    date: '2026-09-18',
-    comment: 'Os detalhes em alta resolução são incríveis. Já estou de olho no próximo lançamento.',
-  },
-  {
-    id: 'r3',
-    author: 'Lia Moreira',
-    rating: 4,
-    date: '2026-09-12',
-    comment: 'Ótima curadoria. Só senti falta de mais informações sobre o processo do artista.',
-  },
-  {
-    id: 'r4',
-    author: 'Rafael Nunes',
-    rating: 5,
-    date: '2026-09-05',
-    comment: 'Comprei a edição 1/50 e o acesso exclusivo para colecionadores valeu cada ETH.',
-  },
-]
-
-const networkLabel = (slug: NetworkSlug) =>
-  CATALOG_NETWORKS.find((network) => network.slug === slug)?.label ?? slug
-
-function toDetail(nft: PreviewNft, index: number): NftDetail {
+export function previewNftDetail(id: string): PreviewCartNft | undefined {
+  const index = PREVIEW_NFTS.findIndex((nft) => nft.id === id)
+  const nft = PREVIEW_NFTS[index]
+  if (!nft) return undefined
   const number = nft.name.split('#')[1] ?? '0'
-  const network = networkLabel(nft.network)
-
   return {
-    ...toSummary(nft),
+    ...nft,
     tokenId: `#${number.padStart(4, '0')}`,
-    creator: 'Nova Sato',
-    about: `Um colecionável digital finalizado à mão da coleção Kurio Editions, verificado na ${network}, com arte desbloqueável e acesso para colecionadores.`,
-    story: [
-      `${nft.name} é uma obra digital 1/50 finalizada à mão da coleção Kurio Editions. Cada atributo fica armazenado nos metadados do token e verificado na ${network}. A obra explora identidade, movimento e luz em um mundo digital sem fronteiras.`,
-      'A propriedade inclui a arte em alta resolução, lançamentos exclusivos para colecionadores e um registro permanente de procedência registrada na rede. Nova Sato recebe 5% de direitos autorais nas vendas secundárias, apoiando novos trabalhos e lançamentos da comunidade.',
-    ],
-    networkInfo: `Cunhado na ${network} com procedência imutável e metadados armazenados no IPFS.`,
-    contract: `0x7A${number.padStart(2, '0').slice(-2)}...19E8 • Contrato inteligente ERC-721 verificado.`,
-    royalties:
-      '5% para o criador nas vendas secundárias, pagos automaticamente pelos mercados compatíveis.',
-    attributes: ARTWORK_ATTRIBUTES[nft.artwork.src] ?? [],
-    rating: { average: Math.round((4.8 - (index % 5) * 0.1) * 10) / 10, count: 19 + index * 3 },
     editions: [
       { id: '1-1', label: EDITION_LABELS['1-1'], available: index % 3 === 0 ? 0 : 1 },
       { id: '1-10', label: EDITION_LABELS['1-10'], available: (index % 4) + 2 },
       { id: '1-50', label: EDITION_LABELS['1-50'], available: 12 + (index % 7) },
       { id: 'aberta', label: EDITION_LABELS.aberta, available: null },
     ],
-    gallery: GALLERY_FOCUS.map(({ label, focus }) => ({
-      src: nft.artwork.src,
-      alt: `${nft.artwork.alt} — ${label}`,
-      focus,
-    })),
   }
-}
-
-const ARTWORK_ATTRIBUTES: Record<string, string[]> = {
-  [ARTWORKS.emerald.src]: ['Óculos', 'Esmeralda', 'Raro'],
-  [ARTWORKS.sage.src]: ['Chapéu bucket', 'Moletom', 'Lilás'],
-  [ARTWORKS.ivory.src]: ['Blazer', 'Gola alta', 'Brinco'],
-  [ARTWORKS.golden.src]: ['Fones', 'Jaqueta', 'Dourado'],
-}
-
-export function previewNftDetail(id: string): NftDetail | undefined {
-  const index = PREVIEW_NFTS.findIndex((nft) => nft.id === id)
-  const nft = PREVIEW_NFTS[index]
-  return nft ? toDetail(nft, index) : undefined
-}
-
-export function previewNftReviews(): NftReview[] {
-  return REVIEWS
-}
-
-/** Outros NFTs da mesma coleção, completados com os mais recentes até 8 itens. */
-export function previewRelatedNfts(id: string): NftSummary[] {
-  const current = PREVIEW_NFTS.find((nft) => nft.id === id)
-  const others = PREVIEW_NFTS.filter((nft) => nft.id !== id)
-  const sameCollection = others.filter((nft) => nft.collection === current?.collection)
-  const rest = others.filter((nft) => nft.collection !== current?.collection)
-  return [...sameCollection, ...rest].slice(0, 8).map(toSummary)
-}
-
-export function previewRecommendations(excludeIds: string[]): NftSummary[] {
-  return PREVIEW_NFTS.filter((nft) => !excludeIds.includes(nft.id))
-    .filter((nft) => nft.isTrending)
-    .slice(0, 10)
-    .map(toSummary)
-}
-
-/** NFTs na ordem dos ids informados, ignorando ids que não existem mais. */
-export function previewNftSummaries(ids: Iterable<string>): NftSummary[] {
-  return Array.from(ids).flatMap((id) => {
-    const nft = PREVIEW_NFTS.find((item) => item.id === id)
-    return nft ? [toSummary(nft)] : []
-  })
 }

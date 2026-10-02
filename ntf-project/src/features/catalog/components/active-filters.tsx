@@ -11,7 +11,7 @@ import {
 
 type ActiveFiltersProps = {
   search: CatalogSearch
-  priceBounds: { min: number; max: number }
+  priceBounds?: { min: number; max: number }
   onChange: (patch: Partial<CatalogSearch>) => void
   onClearAll: () => void
 }
@@ -45,8 +45,8 @@ export function ActiveFilters({ search, priceBounds, onChange, onClearAll }: Act
           {
             key: 'price',
             label: formatEthRange(
-              search.priceMin ?? priceBounds.min,
-              search.priceMax ?? priceBounds.max,
+              search.priceMin ?? priceBounds?.min ?? 0,
+              search.priceMax ?? priceBounds?.max ?? search.priceMin ?? 0,
             ),
             remove: { priceMin: undefined, priceMax: undefined },
           },

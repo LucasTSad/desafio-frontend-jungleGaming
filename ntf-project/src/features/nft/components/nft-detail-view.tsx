@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NftRail } from '@/features/catalog/components/nft-rail'
 import { formatEth } from '@/features/catalog/format'
+import { multiplyEth } from '@/lib/eth'
 import { CATALOG_COLLECTIONS } from '@/features/catalog/search-params'
 import type { NftSummary } from '@/features/catalog/types'
 import { type EditionId, maxQuantityFor, type NftDetail, type NftReview } from '../types'
@@ -273,7 +274,7 @@ function MobilePurchaseBar({
         </div>
         <p className="text-xl font-bold text-brand">
           <span className="sr-only">Total: </span>
-          {formatEth(Math.round(nft.priceEth * quantity * 1e4) / 1e4)}
+          {formatEth(multiplyEth(nft.priceEth, quantity))}
         </p>
       </div>
       <div className="flex gap-3">

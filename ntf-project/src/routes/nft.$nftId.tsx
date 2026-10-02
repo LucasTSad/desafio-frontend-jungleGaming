@@ -1,18 +1,15 @@
+import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { CircleAlert, SearchX } from 'lucide-react'
-import { type ReactNode, useMemo } from 'react'
+import type { ReactNode } from 'react'
 import { toast } from 'sonner'
 import { StatusMessage } from '@/components/common/status-message'
 import { MobileTopBar } from '@/components/layout/mobile-top-bar'
 import { Button } from '@/components/ui/button'
 import { previewCartActions } from '@/dev/preview-cart'
-import {
-  previewDataStatus,
-  previewNftDetail,
-  previewNftReviews,
-  previewRelatedNfts,
-} from '@/dev/preview-data'
-import { togglePreviewFavorite, usePreviewFavorites } from '@/dev/preview-favorites'
+import { isApiError } from '@/api/errors'
+import { nftDetailQueryOptions, relatedNftsQueryOptions } from '@/features/catalog/api'
+import { useFavoriteIds, useToggleFavorite } from '@/features/favorites/api'
 import {
   NftDetailSkeleton,
   NftDetailView,
@@ -22,22 +19,32 @@ import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/nft/$nftId')({
   staticData: { nav: 'market', mobileActionBar: true },
+  loader: ({ context: { queryClient }, params }) => {
+    void queryClient.prefetchQuery(nftDetailQueryOptions(params.nftId))
+    void queryClient.prefetchQuery(relatedNftsQueryOptions(params.nftId))
+  },
   component: NftDetailPage,
 })
 
 function NftDetailPage() {
   const { nftId } = Route.useParams()
   const navigate = useNavigate()
-  const favoriteIds = usePreviewFavorites()
+  const favoriteIds = useFavoriteIds()
+  const toggleFavorite = useToggleFavorite()
   const pathname = useLocation({ select: (location) => location.pathname })
-  const nft = useMemo(() => previewNftDetail(nftId), [nftId])
-  const related = useMemo(() => previewRelatedNfts(nftId), [nftId])
+  const detail = useQuery(nftDetailQueryOptions(nftId))
+  const related = useQuery(relatedNftsQueryOptions(nftId)).data ?? []
+  const nft = detail.data
+  const notFound = isApiError(detail.error, 'NOT_FOUND')
 
-  useDocumentTitle(nft?.name ?? 'NFT não encontrado')
+  useDocumentTitle(
+    nft?.name ??
+      (notFound ? 'NFT não encontrado' : detail.isError ? 'Erro ao carregar NFT' : 'NFT'),
+  )
 
-  if (previewDataStatus === 'loading') return <NftDetailSkeleton />
+  if (detail.isPending) return <NftDetailSkeleton />
 
-  if (previewDataStatus === 'error') {
+  if (detail.isError && !notFound) {
     return (
       <PageState>
         <StatusMessage
@@ -46,7 +53,7 @@ function NftDetailPage() {
           icon={<CircleAlert className="size-7" aria-hidden="true" />}
           title="Não foi possível carregar este NFT"
           description="Verifique sua conexão e tente novamente."
-          action={<Button onClick={() => window.location.reload()}>Tentar novamente</Button>}
+          action={<Button onClick={() => void detail.refetch()}>Tentar novamente</Button>}
         />
       </PageState>
     )
@@ -79,11 +86,11 @@ function NftDetailPage() {
     <NftDetailView
       key={nft.id}
       nft={nft}
-      reviews={previewNftReviews()}
+      reviews={nft.reviews}
       related={related}
       favoriteIds={favoriteIds}
       shareUrl={`${window.location.origin}${pathname}`}
-      onToggleFavorite={togglePreviewFavorite}
+      onToggleFavorite={toggleFavorite}
       onBuy={(selection) => {
         addToCart(selection)
         navigate({ to: '/carrinho' })

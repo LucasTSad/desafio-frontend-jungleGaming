@@ -9,8 +9,8 @@ const ethRangeFormatter = new Intl.NumberFormat('pt-BR', {
 })
 
 // O Figma usa ponto nos preços dos cards ("1.19 ETH") e vírgula na faixa de preço ("0,02 - 12,30 ETH").
-export function formatEth(value: number) {
-  return `${ethFormatter.format(value)} ETH`
+export function formatEth(value: number | string) {
+  return `${ethFormatter.format(Number(value))} ETH`
 }
 
 export function formatEthRange(min: number, max: number) {

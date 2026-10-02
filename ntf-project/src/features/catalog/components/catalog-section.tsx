@@ -14,8 +14,8 @@ import { NftGrid } from './nft-grid'
 type CatalogSectionProps = {
   search: CatalogSearch
   catalog: CatalogPage
-  facets: CatalogFacets
-  featured: NftSummary
+  facets?: CatalogFacets
+  featured?: NftSummary
   status: CatalogStatus
   favoriteIds: ReadonlySet<string>
   filters: ReactNode
@@ -91,7 +91,7 @@ export function CatalogSection({
 
           <ActiveFilters
             search={search}
-            priceBounds={facets.priceRange}
+            priceBounds={facets?.priceRange}
             onChange={onChange}
             onClearAll={onClearFilters}
           />
