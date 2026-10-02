@@ -20,7 +20,7 @@ export async function resetMocks(page: Page, scenario: ScenarioId = 'padrao') {
 }
 
 export function mockControl(page: Page) {
-  return {
+  const controls = {
     setScenario: (id: ScenarioId) =>
       page.evaluate((scenario) => window.__kurioMock!.setScenario(scenario), id),
     getScenario: () => page.evaluate(() => window.__kurioMock!.getScenario()),
@@ -32,7 +32,17 @@ export function mockControl(page: Page) {
         id,
         change,
       ] as const),
+    setRealtimeOnline: (online: boolean) =>
+      page.evaluate((value) => window.__kurioMock!.setRealtimeOnline(value), online),
+    disconnectWallet: () => page.evaluate(() => window.__kurioMock!.disconnectWallet()),
+    realtimeUsers: () => page.evaluate(() => window.__kurioMock!.realtimeUsers()),
   } satisfies Partial<Record<keyof MockControl, unknown>>
+  return {
+    ...controls,
+    /** Espera o socket desta página estar conectado ao servidor de eventos simulado. */
+    waitForRealtime: () =>
+      page.waitForFunction(() => (window.__kurioMock?.realtimeConnections() ?? 0) > 0),
+  }
 }
 
 export const test = base.extend<{ mock: ReturnType<typeof mockControl> }>({

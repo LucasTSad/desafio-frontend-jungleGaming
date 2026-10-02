@@ -1,31 +1,15 @@
 import type { Page } from '@playwright/test'
 import { ACCOUNTS } from '../fixtures/accounts'
 import { signIn, signOut } from '../fixtures/auth'
+import {
+  confirmedHeading,
+  openReview,
+  payButton,
+  placeOrder,
+  review,
+  visible,
+} from '../fixtures/checkout'
 import { expect, test } from '../fixtures/mock'
-
-const visible = (page: Page, name: string | RegExp) =>
-  page.getByRole('button', { name }).filter({ visible: true })
-const review = (page: Page) => page.getByRole('dialog', { name: 'Revisar compra' })
-const payButton = (page: Page) => review(page).getByRole('button', { name: /^Confirmar e pagar/ })
-const confirmedHeading = (page: Page) =>
-  page.getByRole('heading', { name: 'Seus NFTs agora estão na sua carteira' })
-
-/** Preenche o que falta no formulário (o resto vem do perfil) e abre a revisão. */
-async function openReview(page: Page) {
-  await expect(visible(page, 'Confirmar compra')).toBeVisible()
-  const collector = page.getByRole('button', { name: 'Dados do colecionador' })
-  if (await collector.isVisible()) await collector.click()
-  await page.getByLabel('Nome do perfil').fill('Coleção principal')
-  await page.getByLabel('Código de indicação').fill('KURIO-2026')
-  await visible(page, 'Confirmar compra').click()
-  await expect(review(page)).toBeVisible()
-}
-
-async function placeOrder(page: Page) {
-  await payButton(page).click()
-  await expect(page).toHaveURL(/\/pedidos\/ord_\d+$/)
-  return page.url().split('/').pop()!
-}
 
 const storedOrders = (page: Page) =>
   page.evaluate(
@@ -72,6 +56,9 @@ test.describe('checkout com a conta do colecionador', () => {
     await expect(page.getByText('Um pagamento anterior ainda está em processamento.')).toBeVisible()
     await page.getByRole('link', { name: 'Acompanhar o pedido' }).click()
     await expect(page).toHaveURL(`/pedidos/${orderId}`)
+    await expect(
+      page.getByRole('heading', { name: 'Aguardando confirmação na rede' }),
+    ).toBeVisible()
 
     // O resultado é decidido na criação: trocar de cenário depois não recusa o pedido.
     await mock.setScenario('pagamento-recusado')
