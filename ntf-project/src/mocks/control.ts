@@ -1,3 +1,4 @@
+import { updateNft, type NftChange } from './catalog'
 import { DB_STORAGE_KEY, db, mockClock } from './db/store'
 import {
   getScenario,
@@ -33,6 +34,8 @@ export type MockControl = {
   /** Avança o relógio do mock (ex.: expirar sessão ou cotação). */
   advanceClock: (ms: number) => void
   now: () => number
+  /** Muda preço e/ou estoque de um NFT, como faria o backend real (ex.: outra venda). */
+  updateNft: (id: string, change: NftChange) => void
 }
 
 export const mockControl: MockControl = {
@@ -49,6 +52,9 @@ export const mockControl: MockControl = {
   },
   advanceClock: (ms) => mockClock.advance(ms),
   now: () => mockClock.now(),
+  updateNft: (id, change) => {
+    updateNft(id, change)
+  },
 }
 
 declare global {

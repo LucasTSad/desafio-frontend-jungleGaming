@@ -1,5 +1,6 @@
 import type { z } from 'zod'
 import type {
+  EditionIdDto,
   NftDetailDto,
   nftListQuerySchema,
   NftPageDto,
@@ -154,4 +155,29 @@ export function recommendations(excludeIds: string[]) {
   return NFT_FIXTURES.filter((fixture) => fixture.isTrending && !excludeIds.includes(fixture.id))
     .slice(0, RECOMMENDATIONS_LIMIT)
     .map(toSummary)
+}
+
+export type NftChange = {
+  priceEth?: string
+  editions?: Partial<Record<EditionIdDto, number | null>>
+}
+
+/** Muda preço e/ou estoque de um NFT, guardando o preço anterior e subindo a versão. */
+export function updateNft(id: string, change: NftChange) {
+  const fixture = requireFixture(id)
+  return db.update((draft) => {
+    const state = (draft.nfts[id] ??= {
+      priceEth: fixture.priceEth,
+      previousPriceEth: fixture.previousPriceEth,
+      editions: { ...fixture.editions },
+      version: 1,
+    })
+    if (change.priceEth && change.priceEth !== state.priceEth) {
+      state.previousPriceEth = state.priceEth
+      state.priceEth = change.priceEth
+    }
+    state.editions = { ...state.editions, ...change.editions }
+    state.version += 1
+    return toSummary(fixture)
+  })
 }

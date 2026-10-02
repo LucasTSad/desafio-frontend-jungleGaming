@@ -150,6 +150,10 @@ type CartAdjustment = { nftId: string; editionId: EditionId; requested: number; 
 - **Indisponível:** se a edição esgota, a linha fica `unavailable` e o checkout é bloqueado.
 - **Merge no login:** soma as quantidades do visitante às da conta, limita pelo disponível e informa os ajustes.
 - **Decisão:** o carrinho do visitante fica no servidor simulado, identificado por `X-Cart-Id`, para que preço e disponibilidade sempre venham da API.
+- **No cliente:** o `X-Cart-Id` (UUID em `kurio-cart-id`) só nasce no primeiro item adicionado; antes disso o visitante não consulta a API. Com token, vale o carrinho da conta. Ao entrar, o carrinho do visitante é juntado antes de o login terminar e o id é descartado.
+- **Preço alterado bloqueia o checkout** até a pessoa aceitar o novo valor ("Aceitar novo preço"), assim como item indisponível bloqueia até ser removido.
+- **Concorrência:** as mudanças do carrinho vão para a API uma de cada vez (`scope` do TanStack Query), com quantidade e remoção otimistas; enquanto há outras na fila, respostas intermediárias não substituem a tela, e respostas com `version` menor que a do cache são descartadas.
+- **Demonstração:** `window.__kurioMock.updateNft(id, { priceEth, editions })` muda preço/estoque de um NFT para exercitar esses estados.
 
 ## 6. Cotação e conexão de carteira (autenticado)
 
