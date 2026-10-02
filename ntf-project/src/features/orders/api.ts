@@ -3,9 +3,10 @@ import { apiRequest } from '@/api/client'
 import { orderListSchema, orderSchema, type OrderDto } from '@/api/contracts/orders'
 import { API_PATHS } from '@/api/paths'
 import { PRIVATE_QUERY_KEY } from '@/features/auth/session'
+import { isRealtimeConnected } from '@/features/realtime/status'
 import type { Order } from './types'
 
-/** Enquanto o pedido está pendente, a tela consulta a API neste intervalo. */
+/** Sem o socket, enquanto o pedido está pendente, a tela consulta a API neste intervalo. */
 const PENDING_POLL_MS = 1_500
 
 export const orderKeys = {
@@ -43,8 +44,10 @@ export function orderQueryOptions(userId: string, id: string) {
     queryKey: orderKeys.detail(userId, id),
     queryFn: ({ signal }) => apiRequest(orderSchema, { url: API_PATHS.order(id), signal }),
     select: toOrder,
-    // Pendente é o único estado que ainda muda; confirmado e recusado são finais.
-    refetchInterval: (query) => (query.state.data?.status === 'pending' ? PENDING_POLL_MS : false),
+    // Pendente é o único estado que ainda muda; com o socket conectado, a mudança chega pelo
+    // evento `order.updated` e a consulta periódica fica só como reserva para quando ele cair.
+    refetchInterval: (query) =>
+      query.state.data?.status === 'pending' && !isRealtimeConnected() ? PENDING_POLL_MS : false,
   })
 }
 

@@ -226,9 +226,15 @@ type Wallets = { principal: WalletRecord | null; secundaria: WalletRecord | null
 
 ## 9. Eventos Socket.IO
 
-- **Conexão:** `io(VITE_SOCKET_URL, { transports: ['websocket'], auth: { token } })`, interceptada pelo `@mswjs/socket.io-binding`. O visitante conecta sem token e recebe só eventos públicos.
+- **Conexão:** `io(VITE_SOCKET_URL || origem, { path: '/socket.io', transports: ['websocket'], timeout: 5000, auth: { token } })`, interceptada pelo `ws.link` do MSW com o `@mswjs/socket.io-binding`. O visitante conecta sem token e recebe só eventos públicos.
+- **Transporte no mock:** só WebSocket (sem long-polling). O MSW intercepta o `WebSocket` da página, não o service worker; por isso o `socket.io-client` é carregado depois que o MSW liga, já que o `engine.io-client` guarda a referência do `WebSocket` ao carregar. O MSW compara a URL sem o `/socket.io/`, então o link é a origem e o handler confere o caminho; outras conexões (ex.: HMR do Vite) seguem para o servidor real.
+- **Limitações do binding:** sem salas, namespaces nem broadcast. O mock guarda as conexões, lê o token do pacote CONNECT e entrega os eventos privados só às conexões do dono. O binding responde ao handshake por conta própria, sem validar o token nessa etapa.
+- **Servidor fora do ar** (`__kurioMock.setRealtimeOnline(false)`): as conexões caem e as novas ficam sem resposta ao handshake; o cliente desiste pelo `timeout` de 5 s e tenta de novo. Fechar a conexão recusada não funcionaria: nessa fase o Socket.IO só reage a erro.
 - **Troca de sessão:** no logout ou na troca de usuário, o socket é fechado e recriado. O cliente também descarta eventos que cheguem de uma conexão anterior.
 - **Reconexão:** ao reconectar, o cliente invalida as consultas ativas (carrinho, NFT aberto, página do catálogo, pedidos pendentes) para reconciliar com o REST.
+- **Reserva sem socket:** enquanto o socket está desconectado, a tela do pedido pendente volta a consultar a API a cada 1,5 s; conectado, espera o `order.updated`.
+- **Origem dos eventos:** cada gravação no banco mock é comparada com o estado anterior, e o evento sai dessa diferença (preço/estoque → `nft.updated`, status → `order.updated`, conexão encerrada → `wallet.disconnected`). Gravações de outra aba chegam pelo evento `storage` e passam pela mesma comparação. O `eventId` é `tipo:recurso:versão`.
+- **Confirmação do pedido:** um timer resolve o pedido 3 s depois de criado (reagendado se o relógio do mock for atrasado, e retomado ao recarregar); `advanceClock` resolve na hora os pedidos já vencidos.
 
 ```ts
 type RealtimeEvent<TType, TResource, TData> = {
@@ -247,9 +253,9 @@ type WalletDisconnected = RealtimeEvent<'wallet.disconnected', 'wallet-connectio
 
 | Evento | Destino | Efeito no cliente |
 | --- | --- | --- |
-| `nft.updated` | todos | Atualiza catálogo, detalhe e carrinho, avisa por live region e invalida a cotação aberta |
+| `nft.updated` | todos | Atualiza catálogo, detalhe e carrinho e avisa por live region quando o NFT está na tela ou no carrinho. A cotação aberta não é trocada: o "Confirmar e pagar" já cota de novo e mostra "O total mudou" |
 | `order.updated` | só o dono (sala do usuário) | Atualiza o pedido; `confirmed` e `refused` são terminais e não regridem |
-| `wallet.disconnected` | só o dono | Interrompe o pagamento e pede para reconectar |
+| `wallet.disconnected` | só o dono | Descarta a conexão da carteira e avisa; a próxima confirmação conecta de novo (gerado por `__kurioMock.disconnectWallet()`) |
 
 - **Decisão:** `nft.updated` é enviado a todos os clientes, e cada um aplica só o que está em cache. O catálogo é pequeno o bastante para isso.
 
@@ -265,9 +271,9 @@ type WalletDisconnected = RealtimeEvent<'wallet.disconnected', 'wallet-connectio
   - dados: `vazio`, `sessao-expirada`, `cupom-expirado`, `preco-alterado`, `edicao-esgotada`;
   - compra: `carteira-recusada`, `timeout-pedido`, `pagamento-recusado`;
   - `preco-alterado` e `edicao-esgotada` agem na **segunda** cotação depois da ativação (a do "Confirmar e pagar"), mudando a primeira linha do carrinho. `carteira-recusada` recusa só a primeira conexão; `timeout-pedido` cria o pedido e perde só a primeira resposta. `pagamento-recusado` vale para os pedidos criados com ele ativo: o resultado é decidido na criação. Cada efeito vale uma vez por ativação, mesmo após recarregar a página;
-  - tempo real: `eventos-duplicados`.
+  - tempo real: `eventos-duplicados` (cada evento chega de novo 150 ms depois, seguido do evento anterior do mesmo recurso, fora de ordem).
 - **Verificação:** `GET /health` responde `{ status, scenario, seed }` e passa pelas mesmas condições de rede.
-- **Controle:** pelo parâmetro `?cenario=…` e pelo painel "API simulada" no canto inferior esquerdo. Os testes usam `window.__kurioMock` com `reset()`, `setScenario()`, `advanceClock(ms)` e, no 4f, `emit()`. O reset restaura integralmente as fixtures e apaga os dados do app no navegador (chaves `kurio-*`).
+- **Controle:** pelo parâmetro `?cenario=…` e pelo painel "API simulada" no canto inferior esquerdo. Os testes usam `window.__kurioMock` com `reset()`, `setScenario()`, `advanceClock(ms)`, `updateNft()`, `setRealtimeOnline()`, `disconnectWallet()`, `realtimeConnections()` e `realtimeUsers()`. O reset restaura integralmente as fixtures e apaga os dados do app no navegador (chaves `kurio-*`).
 - **Mudanças nos dados** (preço, estoque, status do pedido) passam por uma única função do banco mock, que atualiza o REST e emite o evento correspondente.
 
 ## 11. Impacto no frontend atual

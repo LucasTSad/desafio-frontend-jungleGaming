@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
+import { toast } from 'sonner'
 import { apiRequest } from '@/api/client'
 import {
   quoteSchema,
@@ -10,11 +11,14 @@ import { IDEMPOTENCY_HEADER, orderSchema, type OrderDto } from '@/api/contracts/
 import { isApiError } from '@/api/errors'
 import { API_PATHS } from '@/api/paths'
 import { formatEth } from '@/features/catalog/format'
+import { onWalletDisconnected } from '@/features/realtime/status'
 import type { PayRequest } from './components/review-dialog'
 import type { CheckoutValues } from './schemas'
 import type { CheckoutQuote, PaymentResult, QuoteResult } from './types'
 
 const ORDER_ATTEMPTS = 3
+const WALLET_DISCONNECTED_MESSAGE =
+  'A carteira foi desconectada. Confirme novamente para reconectar e continuar o pagamento.'
 const RETRY_DELAY_MS = 600
 
 export function toCheckoutQuote(dto: QuoteDto): CheckoutQuote {
@@ -96,6 +100,17 @@ async function createOrder(key: string, body: unknown): Promise<OrderDto> {
 /** Revisão e pagamento: cotação, conexão da carteira simulada e criação do pedido. */
 export function useCheckout(cartVersion: number) {
   const connection = useRef<WalletConnectionDto | undefined>(undefined)
+
+  // A carteira pode encerrar a conexão a qualquer momento: a próxima tentativa conecta de novo.
+  useEffect(
+    () =>
+      onWalletDisconnected((connectionId) => {
+        if (connection.current?.id !== connectionId) return
+        connection.current = undefined
+        toast.error(WALLET_DISCONNECTED_MESSAGE)
+      }),
+    [],
+  )
 
   const fetchQuote = async (values: CheckoutValues) =>
     toCheckoutQuote(

@@ -18,12 +18,17 @@ const queryClient = createQueryClient()
 const router = createAppRouter(queryClient)
 installSessionSync(queryClient, router)
 
-void enableMocking().then(() => {
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
-      </QueryClientProvider>
-    </StrictMode>,
-  )
-})
+// O Socket.IO só é carregado depois do MSW: o engine.io-client guarda a referência do WebSocket
+// global ao carregar, e ela precisa já ser a versão interceptada pelo mock.
+void enableMocking()
+  .then(() => import('@/app/realtime'))
+  .then(({ installRealtime }) => {
+    installRealtime(queryClient)
+    createRoot(document.getElementById('root')!).render(
+      <StrictMode>
+        <QueryClientProvider client={queryClient}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>
+      </StrictMode>,
+    )
+  })
