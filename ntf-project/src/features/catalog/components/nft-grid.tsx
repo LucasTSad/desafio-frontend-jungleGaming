@@ -1,5 +1,5 @@
 import { CircleAlert, SearchX } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { StatusMessage } from '@/components/common/status-message'
 import { Button } from '@/components/ui/button'
 import { CATALOG_PAGE_SIZE } from '../search-params'
 import type { CatalogStatus, NftSummary } from '../types'
@@ -41,7 +41,7 @@ export function NftGrid({
 
   if (status === 'error') {
     return (
-      <CatalogMessage
+      <StatusMessage
         icon={<CircleAlert className="size-7" aria-hidden="true" />}
         title="Não foi possível carregar os NFTs"
         description="Verifique sua conexão e tente novamente."
@@ -53,7 +53,7 @@ export function NftGrid({
 
   if (items.length === 0) {
     return (
-      <CatalogMessage
+      <StatusMessage
         icon={<SearchX className="size-7" aria-hidden="true" />}
         title="Nenhum NFT encontrado"
         description="Ajuste a busca ou os filtros para ver outros resultados."
@@ -81,31 +81,5 @@ export function NftGrid({
         </li>
       ))}
     </ul>
-  )
-}
-
-type CatalogMessageProps = {
-  icon: ReactNode
-  title: string
-  description: string
-  action?: ReactNode
-  role?: 'alert'
-}
-
-function CatalogMessage({ icon, title, description, action, role }: CatalogMessageProps) {
-  return (
-    <div
-      role={role}
-      className="flex min-h-80 flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-border px-6 py-12 text-center"
-    >
-      <span className="flex size-14 items-center justify-center rounded-full bg-surface text-brand">
-        {icon}
-      </span>
-      <div className="flex flex-col gap-1">
-        <p className="text-lg font-semibold">{title}</p>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
-      {action}
-    </div>
   )
 }

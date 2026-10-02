@@ -1,4 +1,5 @@
 import { cn } from 'cn'
+import type { CSSProperties } from 'react'
 
 const WIDTHS = [160, 320, 640, 960] as const
 
@@ -14,6 +15,7 @@ type NftImageProps = {
   priority?: boolean
   className?: string
   imgClassName?: string
+  imgStyle?: CSSProperties
 }
 
 export function NftImage({
@@ -23,6 +25,7 @@ export function NftImage({
   priority = false,
   className,
   imgClassName,
+  imgStyle,
 }: NftImageProps) {
   return (
     <picture className={cn('block overflow-hidden', className)}>
@@ -37,6 +40,7 @@ export function NftImage({
         fetchPriority={priority ? 'high' : 'auto'}
         decoding="async"
         className={cn('size-full object-cover', imgClassName)}
+        style={imgStyle}
       />
     </picture>
   )
