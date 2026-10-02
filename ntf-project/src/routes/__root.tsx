@@ -1,5 +1,11 @@
-import { createRootRouteWithContext, Link, Outlet, useLocation } from '@tanstack/react-router'
-import { useState } from 'react'
+import {
+  createRootRouteWithContext,
+  Link,
+  Outlet,
+  useLocation,
+  useRouter,
+} from '@tanstack/react-router'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { Devtools } from '@/app/devtools'
 import { useRouteLayout } from '@/app/route-layout'
@@ -29,6 +35,15 @@ function RootLayout() {
   const { count: cartCount } = usePreviewCart()
   const user = usePreviewUser()
   const [authOpen, setAuthOpen] = useState(false)
+  const router = useRouter()
+  const signedIn = Boolean(user)
+  const wasSignedIn = useRef(signedIn)
+
+  // Quando a sessão termina, reavalia os guards para tirar o usuário das rotas privadas.
+  useEffect(() => {
+    if (wasSignedIn.current && !signedIn) void router.invalidate()
+    wasSignedIn.current = signedIn
+  }, [signedIn, router])
 
   return (
     <TooltipProvider>
@@ -50,7 +65,7 @@ function RootLayout() {
             activeNav={layout.nav}
             pathname={pathname}
             cartCount={cartCount}
-            signedIn={Boolean(user)}
+            signedIn={signedIn}
           />
         </>
       )}

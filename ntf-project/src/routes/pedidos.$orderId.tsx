@@ -5,6 +5,8 @@ import { StatusMessage } from '@/components/common/status-message'
 import { MobileTopBar } from '@/components/layout/mobile-top-bar'
 import { Button } from '@/components/ui/button'
 import { usePreviewOrder } from '@/dev/preview-checkout'
+import { getCurrentAccount } from '@/dev/preview-session'
+import { requireAuth } from '@/features/auth/require-auth'
 import { OrderView } from '@/features/orders/components/order-view'
 import type { OrderStatus } from '@/features/orders/types'
 import { announce } from '@/lib/announce'
@@ -13,6 +15,7 @@ import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/pedidos/$orderId')({
   staticData: { nav: 'market', hideFooter: true },
+  beforeLoad: ({ location }) => requireAuth(Boolean(getCurrentAccount()), location.href),
   component: OrderPage,
 })
 

@@ -3,13 +3,15 @@ import { useMemo } from 'react'
 import { usePreviewCart } from '@/dev/preview-cart'
 import { previewPay, previewSavedWallets } from '@/dev/preview-checkout'
 import { previewDataStatus } from '@/dev/preview-data'
-import { usePreviewUser } from '@/dev/preview-session'
+import { getCurrentAccount, usePreviewUser } from '@/dev/preview-session'
+import { requireAuth } from '@/features/auth/require-auth'
 import { CheckoutView } from '@/features/checkout/components/checkout-view'
 import type { CheckoutInput } from '@/features/checkout/schemas'
 import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/pagamento')({
   staticData: { nav: 'market', mobileActionBar: true },
+  beforeLoad: ({ location }) => requireAuth(Boolean(getCurrentAccount()), location.href),
   component: CheckoutPage,
 })
 
