@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { notifyUnavailable } from '@/lib/notify-unavailable'
 import { signInSchema, type SignInInput, type SignInValues } from '../schemas'
 import { AUTH_COPY, type AuthSubmitResult } from '../types'
-import { FormAlert, SubmitButton } from './auth-form-parts'
+import { FormAlert, SubmitButton } from '@/components/common/form-status'
 import { AUTH_INPUT_CLASSES } from './auth-styles'
 
 type SignInFormProps = {

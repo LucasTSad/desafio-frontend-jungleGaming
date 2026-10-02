@@ -6,7 +6,7 @@ import { PasswordInput } from '@/components/common/password-input'
 import { Input } from '@/components/ui/input'
 import { PASSWORD_HINT, signUpSchema, type SignUpInput, type SignUpValues } from '../schemas'
 import { AUTH_COPY, type AuthSubmitResult } from '../types'
-import { FormAlert, SubmitButton } from './auth-form-parts'
+import { FormAlert, SubmitButton } from '@/components/common/form-status'
 import { AUTH_INPUT_CLASSES } from './auth-styles'
 
 type SignUpFormProps = {
