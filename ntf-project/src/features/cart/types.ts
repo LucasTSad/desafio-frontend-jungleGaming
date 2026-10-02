@@ -2,7 +2,7 @@ import type { NftArtwork } from '@/features/catalog/types'
 import type { EditionId } from '@/features/nft/types'
 
 export type CartLineStatus =
-  { kind: 'price-changed'; previousPriceEth: number } | { kind: 'unavailable' }
+  { kind: 'price-changed'; previousPriceEth: string } | { kind: 'unavailable' }
 
 export type CartLine = {
   id: string
@@ -11,17 +11,18 @@ export type CartLine = {
   artwork: NftArtwork
   tokenId: string
   edition: { id: EditionId; label: string }
-  unitPriceEth: number
+  /** Valores em ETH são strings decimais; contas usam `@/lib/eth` (wei). */
+  unitPriceEth: string
   quantity: number
   maxQuantity: number
   status?: CartLineStatus
 }
 
 export type CartTotals = {
-  subtotalEth: number
-  discountEth: number
-  networkFeeEth: number
-  totalEth: number
+  subtotalEth: string
+  discountEth: string
+  networkFeeEth: string
+  totalEth: string
 }
 
 export type AppliedCoupon = {

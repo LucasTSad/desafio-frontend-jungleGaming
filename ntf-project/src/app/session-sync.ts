@@ -2,7 +2,8 @@ import type { QueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { configureCredentials } from '@/api/client'
 import { isApiError } from '@/api/errors'
-import { isAuthError, PRIVATE_QUERY_KEY, SESSION_QUERY_KEY } from '@/features/auth/api'
+import { getGuestCartId } from '@/features/cart/guest-cart'
+import { isAuthError, PRIVATE_QUERY_KEY, SESSION_QUERY_KEY } from '@/features/auth/session'
 import { sessionStore } from '@/features/auth/session-store'
 import type { AppRouter } from './router'
 
@@ -20,7 +21,7 @@ function endOnAuthError(error: unknown) {
  * levam para Entrar guardando o destino).
  */
 export function installSessionSync(queryClient: QueryClient, router: AppRouter) {
-  configureCredentials({ getToken: sessionStore.getToken, getCartId: () => null })
+  configureCredentials({ getToken: sessionStore.getToken, getCartId: getGuestCartId })
 
   queryClient.getQueryCache().subscribe((event) => {
     if (event.type === 'updated' && event.action.type === 'error') {

@@ -14,8 +14,9 @@ import { MAIN_CONTENT_ID, SkipLink } from '@/components/layout/skip-link'
 import { Button } from '@/components/ui/button'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { usePreviewCart } from '@/dev/preview-cart'
-import { useSessionUser, useSignIn, useSignUp } from '@/features/auth/api'
+import { useSignIn, useSignUp } from '@/features/auth/api'
+import { useSessionUser } from '@/features/auth/session'
+import { useCart } from '@/features/cart/api'
 import { AuthDialog } from '@/features/auth/components/auth-dialog'
 import { welcomeMessage } from '@/features/auth/messages'
 import { useDocumentTitle } from '@/lib/use-document-title'
@@ -28,7 +29,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
 function RootLayout() {
   const layout = useRouteLayout()
   const pathname = useLocation({ select: (location) => location.pathname })
-  const { count: cartCount } = usePreviewCart()
+  const cartCount = useCart().cart?.count ?? 0
   const user = useSessionUser()
   const signIn = useSignIn()
   const signUp = useSignUp()

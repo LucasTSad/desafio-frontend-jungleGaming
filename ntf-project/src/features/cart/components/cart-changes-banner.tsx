@@ -1,10 +1,20 @@
 import { RefreshCw } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { formatEth } from '@/features/catalog/format'
 import type { CartLine } from '../types'
 
-/** Resume as mudanças de preço e disponibilidade recebidas enquanto o carrinho estava aberto. */
-export function CartChangesBanner({ lines }: { lines: CartLine[] }) {
+type CartChangesBannerProps = {
+  lines: CartLine[]
+  onAcceptPrices: (lines: CartLine[]) => void
+}
+
+/**
+ * Resume as mudanças de preço e disponibilidade. Preço novo só vale depois que a pessoa confirma,
+ * e até lá o checkout fica bloqueado.
+ */
+export function CartChangesBanner({ lines, onAcceptPrices }: CartChangesBannerProps) {
   const changed = lines.filter((line) => line.status)
+  const repriced = changed.filter((line) => line.status?.kind === 'price-changed')
   if (changed.length === 0) return null
 
   return (
@@ -21,11 +31,22 @@ export function CartChangesBanner({ lines }: { lines: CartLine[] }) {
               {line.status?.kind === 'unavailable'
                 ? `${line.name} (${line.edition.label}) ficou indisponível.`
                 : `${line.name}: o preço mudou de ${formatEth(
-                    line.status?.kind === 'price-changed' ? line.status.previousPriceEth : 0,
+                    line.status?.kind === 'price-changed' ? line.status.previousPriceEth : '0',
                   )} para ${formatEth(line.unitPriceEth)}.`}
             </li>
           ))}
         </ul>
+        {repriced.length > 0 && (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => onAcceptPrices(repriced)}
+            className="mt-2 w-fit"
+          >
+            {repriced.length === 1 ? 'Aceitar novo preço' : 'Aceitar novos preços'}
+          </Button>
+        )}
       </div>
     </div>
   )

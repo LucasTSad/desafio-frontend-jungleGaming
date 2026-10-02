@@ -10,7 +10,7 @@ type CartSummaryProps = {
   totals: CartTotals
   coupon?: AppliedCoupon
   checkoutBlockedReason?: string
-  onApplyCoupon: (code: string) => CouponResult
+  onApplyCoupon: (code: string) => Promise<CouponResult>
   onRemoveCoupon: () => void
   onCheckout: () => void
 }
@@ -97,7 +97,7 @@ function SummaryRow({ label, value, srSuffix }: SummaryRowProps) {
 
 type CouponFormProps = {
   coupon?: AppliedCoupon
-  onApply: (code: string) => CouponResult
+  onApply: (code: string) => Promise<CouponResult>
   onRemove: () => void
 }
 
@@ -106,6 +106,7 @@ function CouponForm({ coupon, onApply, onRemove }: CouponFormProps) {
   const errorId = useId()
   const [code, setCode] = useState('')
   const [error, setError] = useState<string>()
+  const [applying, setApplying] = useState(false)
 
   if (coupon) {
     return (
@@ -125,19 +126,27 @@ function CouponForm({ coupon, onApply, onRemove }: CouponFormProps) {
     )
   }
 
-  const submit = (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault()
+    if (applying) return
     if (!code.trim()) {
       setError('Informe um código promocional.')
       return
     }
-    const result = onApply(code)
+    setApplying(true)
+    const result = await onApply(code)
+    setApplying(false)
     setError(result.ok ? undefined : result.message)
     if (result.ok) setCode('')
   }
 
   return (
-    <form onSubmit={submit} noValidate className="mt-5 flex flex-col gap-2">
+    <form
+      onSubmit={(event) => void submit(event)}
+      noValidate
+      aria-busy={applying}
+      className="mt-5 flex flex-col gap-2"
+    >
       <label htmlFor={inputId} className="text-sm font-bold max-md:sr-only">
         Código promocional
       </label>
@@ -160,9 +169,10 @@ function CouponForm({ coupon, onApply, onRemove }: CouponFormProps) {
         />
         <Button
           type="submit"
+          aria-disabled={applying || undefined}
           className="h-[50px] w-[100px] shrink-0 rounded-full bg-primary-gradient text-base font-bold max-md:-ml-6 md:h-10 md:rounded-l-none md:rounded-r-sm md:bg-primary md:bg-none"
         >
-          Aplicar
+          {applying ? 'Aplicando…' : 'Aplicar'}
         </Button>
       </div>
       {error && (

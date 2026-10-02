@@ -5,12 +5,13 @@ import { NftImage } from '@/components/common/nft-image'
 import { QuantityStepper } from '@/components/common/quantity-stepper'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatEth } from '@/features/catalog/format'
+import { multiplyEth } from '@/lib/eth'
 import type { CartLine } from '../types'
 
 export const CART_COLUMNS =
   'md:grid md:grid-cols-[minmax(0,311px)_minmax(0,138px)_minmax(0,137px)_minmax(0,1fr)_40px] md:items-center'
 
-const lineTotal = (line: CartLine) => Math.round(line.unitPriceEth * line.quantity * 1e4) / 1e4
+const lineTotal = (line: CartLine) => multiplyEth(line.unitPriceEth, line.quantity)
 
 type CartLineItemProps = {
   line: CartLine

@@ -10,7 +10,7 @@ import type {
   WalletProvider,
 } from '@/features/checkout/types'
 import type { Order } from '@/features/orders/types'
-import { previewCartActions } from './preview-cart'
+import { addEth, multiplyEth, subtractEth } from '@/lib/eth'
 
 /**
  * Troque para revisar os outros caminhos do pagamento:
@@ -24,7 +24,6 @@ export const previewCheckoutScenario:
 const STORAGE_KEY = 'kurio-preview-orders'
 const CONFIRMATION_DELAY = 3500
 const latency = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-const round = (value: number) => Math.round(value * 1e6) / 1e6
 const randomHex = (length: number) =>
   Array.from(crypto.getRandomValues(new Uint8Array(length / 2)), (byte) =>
     byte.toString(16).padStart(2, '0'),
@@ -33,6 +32,7 @@ const randomHex = (length: number) =>
 let orders: Record<string, Order> = readStoredOrders()
 const ordersByKey = new Map<string, string>()
 const listeners = new Set<() => void>()
+const confirmedCallbacks = new Map<string, () => void>()
 let walletRejected = false
 let quoteChanged = false
 
@@ -76,11 +76,8 @@ function scheduleResolution(orderId: string) {
           }
         : { ...order, status: 'confirmed' },
     })
-    if (!refused) {
-      previewCartActions.removePurchased(
-        order.lines.map((line) => ({ id: line.id, quantity: line.quantity })),
-      )
-    }
+    if (!refused) confirmedCallbacks.get(orderId)?.()
+    confirmedCallbacks.delete(orderId)
   }, CONFIRMATION_DELAY)
 }
 
@@ -99,6 +96,8 @@ type PayInput = {
   provider: WalletProvider
   walletAddress: string
   onStep: (step: PaymentStep) => void
+  /** Chamado quando o pagamento é confirmado (ex.: tirar do carrinho o que foi comprado). */
+  onConfirmed?: (lines: { id: string; quantity: number }[]) => void
 }
 
 export async function previewPay(input: PayInput): Promise<PaymentResult> {
@@ -120,7 +119,7 @@ export async function previewPay(input: PayInput): Promise<PaymentResult> {
   await latency(700)
   if (previewCheckoutScenario === 'quote-changed' && !quoteChanged) {
     quoteChanged = true
-    const networkFeeEth = 0.021
+    const networkFeeEth = '0.021'
     const { totals } = input.quote
     return {
       kind: 'quote-changed',
@@ -130,7 +129,7 @@ export async function previewPay(input: PayInput): Promise<PaymentResult> {
         totals: {
           ...totals,
           networkFeeEth,
-          totalEth: round(totals.subtotalEth - totals.discountEth + networkFeeEth),
+          totalEth: addEth(subtractEth(totals.subtotalEth, totals.discountEth), networkFeeEth),
         },
       },
     }
@@ -156,10 +155,16 @@ export async function previewPay(input: PayInput): Promise<PaymentResult> {
       editionLabel: line.edition.label,
       quantity: line.quantity,
       unitPriceEth: line.unitPriceEth,
-      subtotalEth: round(line.unitPriceEth * line.quantity),
+      subtotalEth: multiplyEth(line.unitPriceEth, line.quantity),
     })),
   }
   ordersByKey.set(input.idempotencyKey, id)
+  const { onConfirmed } = input
+  if (onConfirmed) {
+    confirmedCallbacks.set(id, () =>
+      onConfirmed(order.lines.map((line) => ({ id: line.id, quantity: line.quantity }))),
+    )
+  }
   setOrders({ ...orders, [id]: order })
   scheduleResolution(id)
   return { kind: 'placed', orderId: id }

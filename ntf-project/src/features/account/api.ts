@@ -9,7 +9,8 @@ import {
 } from '@/api/contracts/account'
 import type { User } from '@/api/contracts/auth'
 import { API_PATHS } from '@/api/paths'
-import { PRIVATE_QUERY_KEY, SESSION_QUERY_KEY, toSubmitError } from '@/features/auth/api'
+import { toSubmitError } from '@/features/auth/api'
+import { PRIVATE_QUERY_KEY, SESSION_QUERY_KEY } from '@/features/auth/session'
 import type { ProfileValues, WalletValues } from './schemas'
 import type { SaveResult, WalletSlot } from './types'
 

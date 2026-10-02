@@ -6,6 +6,7 @@ import { NftImage } from '@/components/common/nft-image'
 import { Button } from '@/components/ui/button'
 import { formatEth } from '@/features/catalog/format'
 import { formatReceiptDate, shortenHex } from '@/features/checkout/format'
+import { isZeroEth } from '@/lib/eth'
 import { networkLabel, providerLabel } from '@/features/checkout/types'
 import type { Order } from '../types'
 import { ThankYouIllustration } from './thank-you-illustration'
@@ -99,7 +100,7 @@ export function OrderView({ order, onViewExplorer }: OrderViewProps) {
         </table>
 
         <dl className="mt-5 ml-auto flex max-w-[322px] flex-col gap-1.5 border-b border-[#503320] pb-2 text-[15px]">
-          {order.totals.discountEth > 0 && (
+          {!isZeroEth(order.totals.discountEth) && (
             <TotalRow label="Desconto" value={`(-) ${formatEth(order.totals.discountEth)}`} />
           )}
           <TotalRow label="Taxa de rede" value={formatEth(order.totals.networkFeeEth)} />

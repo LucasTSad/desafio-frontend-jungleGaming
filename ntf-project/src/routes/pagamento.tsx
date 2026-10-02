@@ -1,12 +1,12 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useQueryClient, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { usePreviewCart } from '@/dev/preview-cart'
 import { previewPay } from '@/dev/preview-checkout'
-import { previewDataStatus } from '@/dev/preview-data'
 import { profileQueryOptions, walletsQueryOptions } from '@/features/account/api'
 import { toSavedWallets } from '@/features/account/mappers'
 import { requireAuth } from '@/features/auth/require-auth'
+import { EMPTY_CART, removePurchased, useCart } from '@/features/cart/api'
+import { toCatalogStatus } from '@/features/catalog/api'
 import { CheckoutView } from '@/features/checkout/components/checkout-view'
 import type { CheckoutInput } from '@/features/checkout/schemas'
 import { useDocumentTitle } from '@/lib/use-document-title'
@@ -24,7 +24,9 @@ export const Route = createFileRoute('/pagamento')({
 
 function CheckoutPage() {
   const navigate = useNavigate()
-  const { lines, totals, coupon } = usePreviewCart()
+  const queryClient = useQueryClient()
+  const cartQuery = useCart()
+  const { lines, totals, coupon } = cartQuery.cart ?? EMPTY_CART
   const { user } = Route.useRouteContext()
   const { data: profile } = useSuspenseQuery(profileQueryOptions(user.id))
   const { data: wallets } = useSuspenseQuery(walletsQueryOptions(user.id))
@@ -54,7 +56,7 @@ function CheckoutPage() {
 
   return (
     <CheckoutView
-      status={previewDataStatus}
+      status={toCatalogStatus(cartQuery)}
       lines={lines}
       totals={totals}
       coupon={coupon}
@@ -66,10 +68,11 @@ function CheckoutPage() {
           network: values.network,
           provider: values.provider,
           walletAddress: values.walletAddress,
+          onConfirmed: (items) => void removePurchased(queryClient, user.id, items),
         })
       }
       onPlaced={(orderId) => navigate({ to: '/pedidos/$orderId', params: { orderId } })}
-      onRetry={() => window.location.reload()}
+      onRetry={() => void cartQuery.refetch()}
     />
   )
 }

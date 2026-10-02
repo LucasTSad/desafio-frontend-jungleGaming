@@ -11,8 +11,8 @@ export type OrderLine = {
   tokenId: string
   editionLabel: string
   quantity: number
-  unitPriceEth: number
-  subtotalEth: number
+  unitPriceEth: string
+  subtotalEth: string
 }
 
 /** Retrato do pedido no momento da compra: o recibo não muda se o catálogo mudar depois. */

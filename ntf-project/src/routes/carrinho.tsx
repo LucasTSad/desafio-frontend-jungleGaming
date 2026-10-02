@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { previewCartActions, usePreviewCart } from '@/dev/preview-cart'
-import { previewDataStatus } from '@/dev/preview-data'
-import { recommendationsQueryOptions } from '@/features/catalog/api'
-import { useFavoriteIds, useToggleFavorite } from '@/features/favorites/api'
+import { EMPTY_CART, useCart, useCartActions } from '@/features/cart/api'
 import { CartView } from '@/features/cart/components/cart-view'
-import { announce } from '@/lib/announce'
+import { recommendationsQueryOptions, toCatalogStatus } from '@/features/catalog/api'
+import { useFavoriteIds, useToggleFavorite } from '@/features/favorites/api'
 import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/carrinho')({
@@ -15,36 +13,32 @@ export const Route = createFileRoute('/carrinho')({
 
 function CartPage() {
   const navigate = useNavigate()
-  const { lines, totals, coupon } = usePreviewCart()
+  const cartQuery = useCart()
+  const cart = cartQuery.cart ?? EMPTY_CART
+  const actions = useCartActions()
   const favoriteIds = useFavoriteIds()
   const toggleFavorite = useToggleFavorite()
   const recommendations =
-    useQuery(recommendationsQueryOptions(lines.map((line) => line.nftId))).data ?? []
+    useQuery(recommendationsQueryOptions(cart.lines.map((line) => line.nftId))).data ?? []
 
   useDocumentTitle('Carrinho')
 
   return (
     <CartView
-      status={previewDataStatus}
-      lines={lines}
-      totals={totals}
-      coupon={coupon}
+      status={toCatalogStatus(cartQuery)}
+      lines={cart.lines}
+      totals={cart.totals}
+      coupon={cart.coupon}
       recommendations={recommendations}
       favoriteIds={favoriteIds}
       onToggleFavorite={toggleFavorite}
-      onQuantityChange={(line, quantity) => previewCartActions.setQuantity(line.id, quantity)}
-      onRemove={(line) => {
-        previewCartActions.remove(line.id)
-        announce(`${line.name} removido do carrinho`)
-      }}
-      onApplyCoupon={(code) => {
-        const result = previewCartActions.applyCoupon(code)
-        if (result.ok) announce('Cupom aplicado')
-        return result
-      }}
-      onRemoveCoupon={() => previewCartActions.removeCoupon()}
+      onQuantityChange={actions.setQuantity}
+      onRemove={actions.remove}
+      onApplyCoupon={actions.applyCoupon}
+      onAcceptPrices={actions.acceptPrices}
+      onRemoveCoupon={actions.removeCoupon}
       onCheckout={() => navigate({ to: '/pagamento' })}
-      onRetry={() => window.location.reload()}
+      onRetry={() => void cartQuery.refetch()}
     />
   )
 }

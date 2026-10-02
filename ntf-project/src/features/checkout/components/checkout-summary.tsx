@@ -2,9 +2,10 @@ import { Link } from '@tanstack/react-router'
 import { cn } from 'cn'
 import { NftImage } from '@/components/common/nft-image'
 import { formatEth } from '@/features/catalog/format'
+import { multiplyEth } from '@/lib/eth'
 import type { AppliedCoupon, CartLine, CartTotals } from '@/features/cart/types'
 
-const lineSubtotal = (line: CartLine) => Math.round(line.unitPriceEth * line.quantity * 1e4) / 1e4
+const lineSubtotal = (line: CartLine) => multiplyEth(line.unitPriceEth, line.quantity)
 
 export function CheckoutItems({
   lines,

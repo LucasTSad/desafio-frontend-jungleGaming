@@ -1,52 +1,18 @@
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiRequest, apiSend } from '@/api/client'
 import {
   authResponseSchema,
-  currentSessionSchema,
   type LoginRequest,
   type RegisterRequest,
   type User,
 } from '@/api/contracts/auth'
 import { isApiError } from '@/api/errors'
 import { API_PATHS } from '@/api/paths'
+import { mergeGuestCart } from '@/features/cart/api'
 import type { SignInValues, SignUpValues } from './schemas'
+import { PRIVATE_QUERY_KEY, SESSION_QUERY_KEY } from './session'
 import { sessionStore } from './session-store'
 import type { AuthSubmitResult } from './types'
-
-export const SESSION_QUERY_KEY = ['session'] as const
-
-/** Raiz das consultas privadas (`['me', userId, ...]`), descartadas ao sair ou trocar de conta. */
-export const PRIVATE_QUERY_KEY = ['me'] as const
-
-export function isAuthError(error: unknown) {
-  return isApiError(error, 'SESSION_EXPIRED') || isApiError(error, 'UNAUTHENTICATED')
-}
-
-/** Usuário da sessão atual, ou `null` para visitante. Token inválido encerra a sessão local. */
-export function sessionQueryOptions() {
-  return queryOptions({
-    queryKey: SESSION_QUERY_KEY,
-    queryFn: async ({ signal }): Promise<User | null> => {
-      if (!sessionStore.getToken()) return null
-      try {
-        const { user } = await apiRequest(currentSessionSchema, {
-          url: API_PATHS.session,
-          signal,
-        })
-        return user
-      } catch (error) {
-        if (!isAuthError(error)) throw error
-        sessionStore.end(isApiError(error, 'SESSION_EXPIRED') ? 'expired' : 'signed-out')
-        return null
-      }
-    },
-    staleTime: 5 * 60_000,
-  })
-}
-
-export function useSessionUser() {
-  return useQuery(sessionQueryOptions()).data ?? null
-}
 
 /** Mensagens de campo da API viram erro no campo do formulário; o resto vira alerta geral. */
 export function toSubmitError<TField extends string>(
@@ -62,11 +28,16 @@ export function toSubmitError<TField extends string>(
     : { ok: false, message: error.message }
 }
 
+/**
+ * Liga a sessão nova: limpa dados privados de outra conta, junta o carrinho do visitante ao da
+ * conta e só então publica o usuário (o que dispara redirecionamentos e o cabeçalho).
+ */
 function useStartSession() {
   const queryClient = useQueryClient()
-  return (response: { session: { token: string; expiresAt: string }; user: User }) => {
+  return async (response: { session: { token: string; expiresAt: string }; user: User }) => {
     queryClient.removeQueries({ queryKey: PRIVATE_QUERY_KEY })
     sessionStore.signIn(response.session)
+    await mergeGuestCart(queryClient, response.user.id)
     queryClient.setQueryData(SESSION_QUERY_KEY, response.user)
   }
 }

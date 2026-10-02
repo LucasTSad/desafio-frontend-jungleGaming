@@ -1,6 +1,6 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { redirect, type ParsedLocation } from '@tanstack/react-router'
-import { sessionQueryOptions } from './api'
+import { sessionQueryOptions } from './session'
 
 type GuardOptions = { context: { queryClient: QueryClient }; location: ParsedLocation }
 

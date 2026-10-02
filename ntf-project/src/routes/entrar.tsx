@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { useSignIn, useSessionUser } from '@/features/auth/api'
+import { useSignIn } from '@/features/auth/api'
+import { useSessionUser } from '@/features/auth/session'
 import { AuthScreen } from '@/features/auth/components/auth-screen'
 import { SignInForm } from '@/features/auth/components/sign-in-form'
 import { welcomeMessage } from '@/features/auth/messages'

@@ -65,7 +65,7 @@ type Phase =
   | { kind: 'review' }
   | { kind: 'processing'; step: PaymentStep }
   | { kind: 'wallet-rejected'; message: string }
-  | { kind: 'quote-changed'; message: string; previousTotal: number }
+  | { kind: 'quote-changed'; message: string; previousTotal: string }
   | { kind: 'error'; message: string }
 
 type ReviewBodyProps = Omit<ReviewDialogProps, 'open' | 'onOpenChange'> & {

@@ -1,13 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link, useLocation, useNavigate } from '@tanstack/react-router'
 import { CircleAlert, SearchX } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { type ReactNode, useRef } from 'react'
 import { toast } from 'sonner'
 import { StatusMessage } from '@/components/common/status-message'
 import { MobileTopBar } from '@/components/layout/mobile-top-bar'
 import { Button } from '@/components/ui/button'
-import { previewCartActions } from '@/dev/preview-cart'
 import { isApiError } from '@/api/errors'
+import { useCartActions } from '@/features/cart/api'
 import { nftDetailQueryOptions, relatedNftsQueryOptions } from '@/features/catalog/api'
 import { useFavoriteIds, useToggleFavorite } from '@/features/favorites/api'
 import {
@@ -15,6 +15,7 @@ import {
   NftDetailView,
   type PurchaseSelection,
 } from '@/features/nft/components/nft-detail-view'
+import { announce } from '@/lib/announce'
 import { useDocumentTitle } from '@/lib/use-document-title'
 
 export const Route = createFileRoute('/nft/$nftId')({
@@ -31,6 +32,8 @@ function NftDetailPage() {
   const navigate = useNavigate()
   const favoriteIds = useFavoriteIds()
   const toggleFavorite = useToggleFavorite()
+  const cartActions = useCartActions()
+  const adding = useRef(false)
   const pathname = useLocation({ select: (location) => location.pathname })
   const detail = useQuery(nftDetailQueryOptions(nftId))
   const related = useQuery(relatedNftsQueryOptions(nftId)).data ?? []
@@ -79,8 +82,25 @@ function NftDetailPage() {
     )
   }
 
-  const addToCart = ({ editionId, quantity }: PurchaseSelection) =>
-    previewCartActions.add(nft.id, editionId, quantity)
+  /** Adiciona e diz se deu certo; cliques repetidos durante o envio são ignorados. */
+  async function addToCart({ editionId, quantity }: PurchaseSelection) {
+    if (adding.current || !nft) return false
+    adding.current = true
+    try {
+      await cartActions.add({ nftId: nft.id, editionId, quantity })
+      return true
+    } catch (error) {
+      const message =
+        isApiError(error) && !error.retryable
+          ? error.message
+          : 'Não foi possível adicionar ao carrinho. Tente novamente.'
+      toast.error(message)
+      announce(message, 'assertive')
+      return false
+    } finally {
+      adding.current = false
+    }
+  }
 
   return (
     <NftDetailView
@@ -91,12 +111,11 @@ function NftDetailPage() {
       favoriteIds={favoriteIds}
       shareUrl={`${window.location.origin}${pathname}`}
       onToggleFavorite={toggleFavorite}
-      onBuy={(selection) => {
-        addToCart(selection)
-        navigate({ to: '/carrinho' })
+      onBuy={async (selection) => {
+        if (await addToCart(selection)) void navigate({ to: '/carrinho' })
       }}
-      onAddToCart={(selection) => {
-        addToCart(selection)
+      onAddToCart={async (selection) => {
+        if (!(await addToCart(selection))) return
         toast.success(`${nft.name} adicionado ao carrinho`, {
           action: { label: 'Ver carrinho', onClick: () => navigate({ to: '/carrinho' }) },
         })

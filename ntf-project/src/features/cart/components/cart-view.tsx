@@ -21,7 +21,8 @@ type CartViewProps = {
   onToggleFavorite: (nft: NftSummary) => void
   onQuantityChange: (line: CartLine, quantity: number) => void
   onRemove: (line: CartLine) => void
-  onApplyCoupon: (code: string) => CouponResult
+  onApplyCoupon: (code: string) => Promise<CouponResult>
+  onAcceptPrices: (lines: CartLine[]) => void
   onRemoveCoupon: () => void
   onCheckout: () => void
   onRetry: () => void
@@ -65,6 +66,7 @@ function CartContent({
   onQuantityChange,
   onRemove,
   onApplyCoupon,
+  onAcceptPrices,
   onRemoveCoupon,
   onCheckout,
   onRetry,
@@ -102,6 +104,7 @@ function CartContent({
 
   const loading = status === 'loading'
   const blocked = lines.some((line) => line.status?.kind === 'unavailable')
+  const priceChanged = lines.some((line) => line.status?.kind === 'price-changed')
 
   return (
     <div className="mt-2 grid gap-8 md:mt-4 lg:grid-cols-[minmax(0,782px)_minmax(0,332px)] lg:justify-between lg:gap-12">
@@ -122,7 +125,7 @@ function CartContent({
           <span>Edições</span>
           <span>Total</span>
         </div>
-        {!loading && <CartChangesBanner lines={lines} />}
+        {!loading && <CartChangesBanner lines={lines} onAcceptPrices={onAcceptPrices} />}
         <ul className="flex flex-col gap-4 md:gap-3">
           {loading
             ? Array.from({ length: 3 }, (_, index) => (
@@ -149,7 +152,11 @@ function CartContent({
           totals={totals}
           coupon={coupon}
           checkoutBlockedReason={
-            blocked ? 'Remova os itens indisponíveis para continuar.' : undefined
+            blocked
+              ? 'Remova os itens indisponíveis para continuar.'
+              : priceChanged
+                ? 'Confirme os novos preços para continuar.'
+                : undefined
           }
           onApplyCoupon={onApplyCoupon}
           onRemoveCoupon={onRemoveCoupon}
