@@ -1,0 +1,55 @@
+import { useId, type ReactNode } from 'react'
+import { cn } from 'cn'
+
+export type FieldControlProps = {
+  id: string
+  'aria-invalid'?: true
+  'aria-describedby'?: string
+}
+
+type FormFieldProps = {
+  label: string
+  /** Mantém o rótulo apenas para leitores de tela quando o layout usa só placeholder. */
+  hideLabel?: boolean
+  hint?: string
+  error?: string
+  className?: string
+  children: (control: FieldControlProps) => ReactNode
+}
+
+export function FormField({
+  label,
+  hideLabel = false,
+  hint,
+  error,
+  className,
+  children,
+}: FormFieldProps) {
+  const id = useId()
+  const hintId = `${id}-hint`
+  const errorId = `${id}-error`
+  const describedBy = [hint && hintId, error && errorId].filter(Boolean).join(' ')
+
+  return (
+    <div className={cn('flex flex-col gap-1.5', className)}>
+      <label htmlFor={id} className={cn('text-sm font-semibold', hideLabel && 'sr-only')}>
+        {label}
+      </label>
+      {children({
+        id,
+        'aria-invalid': error ? true : undefined,
+        'aria-describedby': describedBy || undefined,
+      })}
+      {hint && (
+        <p id={hintId} className={cn('text-xs text-subtle-foreground', error && 'sr-only')}>
+          {hint}
+        </p>
+      )}
+      {error && (
+        <p id={errorId} className="text-xs font-medium text-destructive">
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
