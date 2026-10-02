@@ -152,4 +152,17 @@ export const previewCartActions = {
   removeCoupon() {
     setState({ ...state, couponCode: undefined })
   },
+  /** Após a confirmação, tira do carrinho só os itens e quantidades que foram comprados. */
+  removePurchased(items: { id: string; quantity: number }[]) {
+    const purchased = new Map(items.map((item) => [item.id, item.quantity]))
+    setState({
+      couponCode: undefined,
+      lines: state.lines
+        .map((line) => ({
+          ...line,
+          quantity: line.quantity - (purchased.get(lineId(line.nftId, line.editionId)) ?? 0),
+        }))
+        .filter((line) => line.quantity > 0),
+    })
+  },
 }
