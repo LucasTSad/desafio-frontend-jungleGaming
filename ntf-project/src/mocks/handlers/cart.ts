@@ -19,13 +19,22 @@ import {
   validateCoupon,
 } from '../cart'
 import { requireFixture, toSummary } from '../catalog'
+import { settleUserOrders } from '../checkout'
 import { db } from '../db/store'
 import { api, MockApiError } from '../respond'
 
 const lineNotFound = () => new MockApiError('NOT_FOUND', 'Este item não está mais no seu carrinho.')
 
 export const cartHandlers = [
-  api.get(API_PATHS.cart, ({ request }) => HttpResponse.json(toCartDto(readCart(request)))),
+  // Pedidos vencidos são resolvidos antes, para o carrinho já refletir o que foi comprado.
+  api.get(API_PATHS.cart, ({ request }) => {
+    const cart = readCart(request)
+    if (cart.userId) {
+      settleUserOrders(cart.userId)
+      return HttpResponse.json(toCartDto(readCart(request)))
+    }
+    return HttpResponse.json(toCartDto(cart))
+  }),
 
   api.post(API_PATHS.cartItems, async ({ request }) => {
     const body = await readBody(request, addCartItemRequestSchema)

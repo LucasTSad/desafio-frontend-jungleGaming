@@ -3,7 +3,7 @@ import { USER_FIXTURES } from '../fixtures/users'
 import type { CartRecord, DbState } from './types'
 
 /** Mudar a estrutura do banco exige subir a versão: dados antigos são descartados no carregamento. */
-const SCHEMA_VERSION = 2
+const SCHEMA_VERSION = 3
 export const DB_STORAGE_KEY = 'kurio-mock-db'
 export const DEFAULT_SEED = 20261002
 
@@ -65,6 +65,7 @@ export function createSeedState(seed = DEFAULT_SEED): DbState {
     walletConnections: {},
     orders: {},
     idempotency: {},
+    scenarioMarks: {},
     sequence: 0,
   }
 }

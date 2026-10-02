@@ -80,5 +80,7 @@ export type DbState = {
   walletConnections: Record<string, WalletConnectionRecord>
   orders: Record<string, OrderRecord>
   idempotency: Record<string, IdempotencyRecord>
+  /** Efeitos de cenário já aplicados, com o instante de ativação do cenário em que valeram. */
+  scenarioMarks: Record<string, number>
   sequence: number
 }

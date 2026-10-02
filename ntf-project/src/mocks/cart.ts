@@ -99,7 +99,11 @@ export function couponOf(code: string | null) {
 }
 
 /** Totais calculados em wei; itens indisponíveis ficam fora da conta. */
-export function totalsOf(lines: CartLineDto[], couponCode: string | null) {
+export function totalsOf(
+  lines: CartLineDto[],
+  couponCode: string | null,
+  network: keyof typeof NETWORK_FEE_ETH = 'ethereum',
+) {
   const billable = lines.filter((line) => line.status?.kind !== 'unavailable')
   const subtotalEth = addEth(
     '0',
@@ -107,7 +111,7 @@ export function totalsOf(lines: CartLineDto[], couponCode: string | null) {
   )
   const coupon = couponOf(couponCode)
   const discountEth = coupon ? percentOfEth(subtotalEth, coupon.basisPoints) : '0'
-  const networkFeeEth = billable.length > 0 ? NETWORK_FEE_ETH.ethereum : '0'
+  const networkFeeEth = billable.length > 0 ? NETWORK_FEE_ETH[network] : '0'
   return {
     subtotalEth,
     discountEth,
