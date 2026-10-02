@@ -128,7 +128,13 @@ const sameQuote = (a: QuoteDto, b: QuoteDto) =>
 type CreateOrderBody = z.output<typeof createOrderRequestSchema>
 
 export function toOrderDto(order: OrderRecord): OrderDto {
-  const { userId: _userId, cartId: _cartId, idempotencyKey: _key, ...dto } = order
+  const {
+    userId: _userId,
+    cartId: _cartId,
+    idempotencyKey: _key,
+    outcome: _outcome,
+    ...dto
+  } = order
   return dto
 }
 
@@ -193,6 +199,7 @@ export function createOrder(user: UserRecord, key: string, body: CreateOrderBody
     userId: user.id,
     cartId: quote.cartId,
     idempotencyKey: key,
+    outcome: isScenario('pagamento-recusado') ? 'refused' : 'confirmed',
   }
   db.update((draft) => {
     draft.orders[order.id] = order
@@ -203,19 +210,19 @@ export function createOrder(user: UserRecord, key: string, body: CreateOrderBody
 
 /**
  * Resolve o pedido pendente quando o prazo da "rede" passa. Confirmado: baixa o estoque das
- * edições limitadas e tira do carrinho só o que foi comprado. Recusado: nada muda.
+ * edições limitadas e tira do carrinho só o que foi comprado. Recusado: nada muda. O resultado
+ * foi decidido na criação, então trocar de cenário depois não muda um pedido já enviado.
  */
 export function settleOrder(orderId: string) {
   const order = db.get().orders[orderId]
   if (!order || order.status !== 'pending') return order
   if (Date.parse(order.createdAt) + CONFIRMATION_DELAY_MS > mockClock.now()) return order
 
-  const refused = isScenario('pagamento-recusado')
   return db.update((draft) => {
     const target = draft.orders[orderId]!
     target.version += 1
     target.updatedAt = mockClock.iso()
-    if (refused) {
+    if (target.outcome === 'refused') {
       target.status = 'refused'
       target.failureReason = 'A carteira informou saldo insuficiente para cobrir o total e a taxa.'
       return target

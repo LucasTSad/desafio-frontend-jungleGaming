@@ -62,6 +62,8 @@ export type OrderRecord = OrderDto & {
   userId: string
   cartId: string
   idempotencyKey: string
+  /** Resultado decidido na criação, pelo cenário ativo naquele momento. */
+  outcome: 'confirmed' | 'refused'
 }
 
 export type IdempotencyRecord = { orderId: string; requestHash: string }

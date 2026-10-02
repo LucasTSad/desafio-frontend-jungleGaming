@@ -264,7 +264,7 @@ type WalletDisconnected = RealtimeEvent<'wallet.disconnected', 'wallet-connectio
   - rede: `padrao`, `lento`, `fora-de-ordem`, `offline`, `erro-servidor` (503 em tudo), `instavel` (cada requisição falha 3 vezes e funciona na 4ª);
   - dados: `vazio`, `sessao-expirada`, `cupom-expirado`, `preco-alterado`, `edicao-esgotada`;
   - compra: `carteira-recusada`, `timeout-pedido`, `pagamento-recusado`;
-  - `preco-alterado` e `edicao-esgotada` agem na **segunda** cotação depois da ativação (a do "Confirmar e pagar"), mudando a primeira linha do carrinho. `carteira-recusada` recusa só a primeira conexão; `timeout-pedido` cria o pedido e perde só a primeira resposta. Cada efeito vale uma vez por ativação, mesmo após recarregar a página;
+  - `preco-alterado` e `edicao-esgotada` agem na **segunda** cotação depois da ativação (a do "Confirmar e pagar"), mudando a primeira linha do carrinho. `carteira-recusada` recusa só a primeira conexão; `timeout-pedido` cria o pedido e perde só a primeira resposta. `pagamento-recusado` vale para os pedidos criados com ele ativo: o resultado é decidido na criação. Cada efeito vale uma vez por ativação, mesmo após recarregar a página;
   - tempo real: `eventos-duplicados`.
 - **Verificação:** `GET /health` responde `{ status, scenario, seed }` e passa pelas mesmas condições de rede.
 - **Controle:** pelo parâmetro `?cenario=…` e pelo painel "API simulada" no canto inferior esquerdo. Os testes usam `window.__kurioMock` com `reset()`, `setScenario()`, `advanceClock(ms)` e, no 4f, `emit()`. O reset restaura integralmente as fixtures e apaga os dados do app no navegador (chaves `kurio-*`).

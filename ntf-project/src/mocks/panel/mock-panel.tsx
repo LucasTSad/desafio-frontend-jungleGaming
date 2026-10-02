@@ -93,8 +93,8 @@ export function MockPanel() {
             </button>
           </div>
           <p className="text-[11px] text-subtle-foreground">
-            "Restaurar dados" volta às fixtures e encerra a sessão. A página recarrega nos dois
-            casos.
+            "Restaurar dados" volta às fixtures com o cenário selecionado e encerra a sessão. A
+            página recarrega nos dois casos.
           </p>
         </Popover.Content>
       </Popover.Portal>
