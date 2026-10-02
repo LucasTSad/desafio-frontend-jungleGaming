@@ -12,6 +12,11 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
+  // Cada teste E2E restaura os mocks e espera o service worker; com muitos navegadores em
+  // paralelo numa máquina ocupada, essa preparação sozinha passa de 20 s.
+  workers: 4,
+  timeout: 60_000,
+  expect: { timeout: 10_000 },
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   use: {
     baseURL: BASE_URL,
