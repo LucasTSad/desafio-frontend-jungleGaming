@@ -1,6 +1,6 @@
-# Contratos da API simulada — proposta
+# Contratos da API simulada
 
-> Contratos aprovados para a implementação dos mocks e da integração.
+> Contratos REST e eventos usados pelo cliente e pela API simulada (MSW). Os schemas zod ficam em `ntf-project/src/api/contracts/`.
 
 ## 1. Convenções gerais
 
@@ -200,7 +200,7 @@ type Order = {
 
 - **Idempotência:** o cliente gera a chave quando a revisão abre e a reutiliza em cliques repetidos e reenvios após timeout. Ela só é trocada depois de uma nova cotação. Reenvios com a mesma chave e o mesmo corpo devolvem o pedido já criado.
 - **Retomada após refresh:** em vez de guardar a chave, a tela de pagamento consulta `GET /me/orders?status=pending` e, havendo pedido pendente, mostra um aviso com o link "Acompanhar o pedido".
-- **Confirmação:** o pedido fica pendente por 3 s (relógio do mock) e é resolvido na próxima leitura (`GET /orders/:id`, `GET /me/orders` ou `GET /cart`). A tela do pedido consulta a cada 1,5 s enquanto ele estiver pendente; no 4f o evento `order.updated` passa a avisar sem esperar a consulta.
+- **Confirmação:** o pedido fica pendente por 3 s (relógio do mock) e é resolvido na próxima leitura (`GET /orders/:id`, `GET /me/orders` ou `GET /cart`). Com o socket conectado, a tela do pedido é avisada pelo evento `order.updated`; sem ele, consulta a API a cada 1,5 s enquanto o pedido estiver pendente.
 - **Estoque:** ao confirmar, as edições limitadas compradas perdem as unidades correspondentes (uma 1/1 comprada fica esgotada).
 - **Itens no carrinho:** só saem do carrinho quando o pedido é **confirmado**, e apenas as quantidades compradas. Se o pedido for recusado, nada muda.
 - O recibo só é exibido com `status: confirmed`.
@@ -275,9 +275,3 @@ type WalletDisconnected = RealtimeEvent<'wallet.disconnected', 'wallet-connectio
 - **Verificação:** `GET /health` responde `{ status, scenario, seed }` e passa pelas mesmas condições de rede.
 - **Controle:** pelo parâmetro `?cenario=…` e pelo painel "API simulada" no canto inferior esquerdo. Os testes usam `window.__kurioMock` com `reset()`, `setScenario()`, `advanceClock(ms)`, `updateNft()`, `setRealtimeOnline()`, `disconnectWallet()`, `realtimeConnections()` e `realtimeUsers()`. O reset restaura integralmente as fixtures e apaga os dados do app no navegador (chaves `kurio-*`).
 - **Mudanças nos dados** (preço, estoque, status do pedido) passam por uma única função do banco mock, que atualiza o REST e emite o evento correspondente.
-
-## 11. Impacto no frontend atual
-
-- `priceEth: number` passa a `string` nos tipos das telas, com utilitários `eth.ts` (wei/`bigint`) para somar e formatar.
-- `src/dev/` é removido. As rotas passam a usar hooks do TanStack Query em `src/features/*/api.ts`, e os componentes não mudam de interface.
-- O fluxo de pagamento troca os passos simulados por: conectar carteira (`POST /wallet-connections`), cotar (`POST /checkout/quote`) e criar o pedido (`POST /orders`).
