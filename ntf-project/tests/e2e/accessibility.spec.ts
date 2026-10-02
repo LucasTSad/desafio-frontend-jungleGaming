@@ -28,7 +28,12 @@ const focusIndicator = (page: Page) =>
   })
 
 async function expectNoAxeViolations(page: Page) {
-  const { violations } = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze()
+  const { violations } = await new AxeBuilder({ page })
+    // A regra do nome que contém o texto visível (WCAG 2.5.3) é experimental no axe e precisa ser
+    // ligada à parte; `options` vem antes de `withTags` porque substitui as opções inteiras.
+    .options({ rules: { 'label-content-name-mismatch': { enabled: true } } })
+    .withTags(WCAG_TAGS)
+    .analyze()
   const summary = violations.map(({ id, impact, nodes }) => ({
     id,
     impact,
