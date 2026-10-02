@@ -73,6 +73,8 @@ test.describe('checkout com a conta do colecionador', () => {
     await page.getByRole('link', { name: 'Acompanhar o pedido' }).click()
     await expect(page).toHaveURL(`/pedidos/${orderId}`)
 
+    // O resultado é decidido na criação: trocar de cenário depois não recusa o pedido.
+    await mock.setScenario('pagamento-recusado')
     await mock.advanceClock(60_000)
     await expect(confirmedHeading(page)).toBeVisible({ timeout: 15_000 })
   })
@@ -136,7 +138,7 @@ test.describe('checkout com a conta do colecionador', () => {
     await expect(page.getByText(/saldo insuficiente/)).toBeVisible()
 
     await page.goto('/carrinho')
-    await expect(page.locator('main article', { hasText: 'Emerald Ape #042' })).toBeVisible()
+    await expect(page.getByRole('article', { name: 'Emerald Ape #042', exact: true })).toBeVisible()
   })
 
   test('o pedido de outra conta não é exibido', async ({ page }) => {

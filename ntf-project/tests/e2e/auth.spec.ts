@@ -83,6 +83,8 @@ test.describe('sessão', () => {
 
   test('cenário de sessão expirada pede login e volta ao destino', async ({ page, mock }) => {
     await signIn(page)
+    // Requisições ainda em andamento no início venceriam a sessão já nesta página, antes do goto.
+    await page.waitForLoadState('networkidle')
     await mock.setScenario('sessao-expirada')
     await page.goto('/conta/perfil')
 
