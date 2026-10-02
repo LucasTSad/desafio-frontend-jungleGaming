@@ -2,7 +2,7 @@
 
 Marketplace de NFTs do [desafio frontend](docs/desafio.md): catálogo, detalhe, carrinho, pagamento com carteira simulada, pedidos e conta do colecionador, em desktop e mobile. A API REST e o Socket.IO são simulados no navegador com MSW. Não há backend real, e a versão publicada roda com a mesma camada de mocks.
 
-- **Aplicação publicada:** _(link adicionado após o deploy)_
+- **Aplicação publicada:** https://kurio-nft-marketplace-ashy.vercel.app
 - **Arquitetura, decisões e desvios do Figma:** [ARCHITECTURE.md](ARCHITECTURE.md)
 - **Contratos REST e eventos:** [docs/contratos-api.md](docs/contratos-api.md)
 - **Testes E2E:** [docs/testes-e2e.md](docs/testes-e2e.md)
@@ -147,6 +147,19 @@ Use o painel "API simulada" ou `?cenario=<id>` na URL. Para começar do zero, us
 | Pagamento recusado | Ative `pagamento-recusado` e confirme a compra | Pedido recusado; os itens continuam no carrinho |
 | Pedido pendente sem socket | Rode `__kurioMock.setRealtimeOnline(false)`, confirme a compra e recarregue a página do pedido | O pedido segue pendente e é confirmado pela consulta à API, sem nova compra. O pagamento mostra "Acompanhar o pedido" enquanto houver um pendente |
 | Eventos duplicados e antigos | Ative `eventos-duplicados` e mude um preço pelo console | O preço não volta ao valor anterior e o aviso não se repete |
+
+## Deploy
+
+A aplicação é publicada na Vercel pela CLI, a partir de `ntf-project/`, com o build de demonstração (mocks ligados pelo `.env` versionado). O `vercel.json` reescreve todas as rotas para o `index.html`, para o acesso direto e o refresh funcionarem, e serve os arquivos de `/assets` com cache imutável. O `.vercelignore` deixa relatórios e baselines fora do envio.
+
+```bash
+npm i -g vercel
+vercel login
+vercel link
+vercel deploy --prod
+```
+
+O `vercel link` cria a pasta `.vercel/` (ignorada pelo Git) com o vínculo do projeto. Sem `--prod`, o `vercel deploy` gera uma URL de prévia.
 
 ## Estrutura do repositório
 
